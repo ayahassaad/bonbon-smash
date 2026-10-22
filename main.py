@@ -1,8 +1,6 @@
 import pygame
 
-WINDOW_WIDTH = 640
-WINDOW_HEIGHT = 640
-BACKGROUND_COLOR = (30, 30, 40)
+from constants import WINDOW_WIDTH, WINDOW_HEIGHT, BACKGROUND_COLOR
 
 
 def main():

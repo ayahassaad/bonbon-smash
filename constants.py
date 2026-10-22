@@ -1,0 +1,20 @@
+GRID_ROWS = 8
+GRID_COLS = 8
+TILE_SIZE = 80
+
+BOARD_OFFSET_X = 0
+BOARD_OFFSET_Y = 0
+
+WINDOW_WIDTH = GRID_COLS * TILE_SIZE
+WINDOW_HEIGHT = GRID_ROWS * TILE_SIZE
+
+BACKGROUND_COLOR = (30, 30, 40)
+
+CANDY_COLORS = [
+    (220, 60, 60),    # red
+    (240, 170, 50),   # orange
+    (230, 220, 60),   # yellow
+    (70, 180, 90),    # green
+    (60, 120, 220),   # blue
+    (170, 80, 200),   # purple
+]
