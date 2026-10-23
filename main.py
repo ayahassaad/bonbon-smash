@@ -1,6 +1,7 @@
 import pygame
 
 from constants import WINDOW_WIDTH, WINDOW_HEIGHT, BACKGROUND_COLOR
+from grid import create_grid, draw_grid
 
 
 def main():
@@ -9,6 +10,8 @@ def main():
     pygame.display.set_caption("Bonbon Smash")
     clock = pygame.time.Clock()
 
+    grid = create_grid()
+
     running = True
     while running:
         for event in pygame.event.get():
@@ -16,6 +19,7 @@ def main():
                 running = False
 
         screen.fill(BACKGROUND_COLOR)
+        draw_grid(screen, grid)
         pygame.display.flip()
         clock.tick(60)
 
