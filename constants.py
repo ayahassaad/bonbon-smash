@@ -18,3 +18,6 @@ CANDY_COLORS = [
     (60, 120, 220),   # blue
     (170, 80, 200),   # purple
 ]
+
+SELECTION_COLOR = (255, 255, 255)
+SELECTION_BORDER_WIDTH = 4

@@ -1,7 +1,7 @@
 import pygame
 
 from constants import WINDOW_WIDTH, WINDOW_HEIGHT, BACKGROUND_COLOR
-from grid import create_grid, draw_grid
+from grid import create_grid, draw_grid, pixel_to_cell, is_adjacent, swap_cells
 
 
 def main():
@@ -11,15 +11,27 @@ def main():
     clock = pygame.time.Clock()
 
     grid = create_grid()
+    selected_cell = None
 
     running = True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                clicked_cell = pixel_to_cell(event.pos)
+                if selected_cell is None:
+                    selected_cell = clicked_cell
+                elif clicked_cell == selected_cell:
+                    selected_cell = None
+                elif is_adjacent(selected_cell, clicked_cell):
+                    swap_cells(grid, selected_cell, clicked_cell)
+                    selected_cell = None
+                else:
+                    selected_cell = clicked_cell
 
         screen.fill(BACKGROUND_COLOR)
-        draw_grid(screen, grid)
+        draw_grid(screen, grid, selected_cell)
         pygame.display.flip()
         clock.tick(60)
 
