@@ -9,6 +9,7 @@ from constants import (
     SCORE_COLOR,
     SCORE_POSITION,
     SWAP_ANIMATION_DURATION_MS,
+    FALL_ANIMATION_DURATION_MS,
 )
 from grid import (
     create_grid,
@@ -18,7 +19,7 @@ from grid import (
     is_adjacent,
     swap_cells,
     find_matches,
-    resolve_matches,
+    start_fall,
 )
 
 
@@ -33,6 +34,7 @@ def main():
     selected_cell = None
     score = 0
     swap_animation = None
+    fall_animation = None
 
     running = True
     while running:
@@ -40,7 +42,7 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if swap_animation is not None:
+                if swap_animation is not None or fall_animation is not None:
                     continue
                 clicked_cell = pixel_to_cell(event.pos)
                 if not is_within_grid(clicked_cell):
@@ -65,16 +67,27 @@ def main():
             if elapsed >= SWAP_ANIMATION_DURATION_MS:
                 matched_cells = find_matches(grid)
                 if matched_cells:
-                    cleared_count = resolve_matches(grid, matched_cells)
-                    score += cleared_count * SCORE_PER_TILE
+                    score += len(matched_cells) * SCORE_PER_TILE
+                    fall_animation = {
+                        "offsets": start_fall(grid, matched_cells),
+                        "start_time": pygame.time.get_ticks(),
+                        "progress": 0.0,
+                    }
                 else:
                     swap_cells(grid, swap_animation["cell_a"], swap_animation["cell_b"])
                 swap_animation = None
             else:
                 swap_animation["progress"] = elapsed / SWAP_ANIMATION_DURATION_MS
 
+        if fall_animation is not None:
+            elapsed = pygame.time.get_ticks() - fall_animation["start_time"]
+            if elapsed >= FALL_ANIMATION_DURATION_MS:
+                fall_animation = None
+            else:
+                fall_animation["progress"] = elapsed / FALL_ANIMATION_DURATION_MS
+
         screen.fill(BACKGROUND_COLOR)
-        draw_grid(screen, grid, selected_cell, swap_animation)
+        draw_grid(screen, grid, selected_cell, swap_animation, fall_animation)
         score_surface = score_font.render(f"Score: {score}", True, SCORE_COLOR)
         screen.blit(score_surface, SCORE_POSITION)
         pygame.display.flip()

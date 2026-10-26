@@ -166,12 +166,17 @@ def refill_empty(grid):
                 grid[row][col] = random.randint(0, len(CANDY_COLORS) - 1)
 
 
-def resolve_matches(grid, matched_cells):
-    cleared_count = 0
-    while matched_cells:
-        cleared_count += len(matched_cells)
-        clear_matches(grid, matched_cells)
-        apply_gravity(grid)
-        refill_empty(grid)
-        matched_cells = find_matches(grid)
-    return cleared_count
+def start_fall(grid, matched_cells):
+    clear_matches(grid, matched_cells)
+    offsets = compute_fall_offsets(grid)
+    apply_gravity(grid)
+    refilled_cells = [
+        (row, col)
+        for row in range(GRID_ROWS)
+        for col in range(GRID_COLS)
+        if grid[row][col] is None
+    ]
+    refill_empty(grid)
+    for row, col in refilled_cells:
+        offsets[(row, col)] = row - GRID_ROWS
+    return offsets
