@@ -21,18 +21,20 @@ from grid import (
     find_matches,
     start_fall,
 )
+from particles import spawn_particles_for_matches, update_and_draw_particles
 
 
 def try_start_fall(grid):
     matched_cells = find_matches(grid)
     if not matched_cells:
-        return None, 0
+        return None, 0, []
+    new_particles = spawn_particles_for_matches(grid, matched_cells)
     animation = {
         "offsets": start_fall(grid, matched_cells),
         "start_time": pygame.time.get_ticks(),
         "progress": 0.0,
     }
-    return animation, len(matched_cells) * SCORE_PER_TILE
+    return animation, len(matched_cells) * SCORE_PER_TILE, new_particles
 
 
 def main():
@@ -47,6 +49,7 @@ def main():
     score = 0
     swap_animation = None
     fall_animation = None
+    particles = []
 
     running = True
     while running:
@@ -77,9 +80,10 @@ def main():
         if swap_animation is not None:
             elapsed = pygame.time.get_ticks() - swap_animation["start_time"]
             if elapsed >= SWAP_ANIMATION_DURATION_MS:
-                fall_animation, score_delta = try_start_fall(grid)
+                fall_animation, score_delta, new_particles = try_start_fall(grid)
                 if fall_animation is not None:
                     score += score_delta
+                    particles.extend(new_particles)
                 else:
                     swap_cells(grid, swap_animation["cell_a"], swap_animation["cell_b"])
                 swap_animation = None
@@ -89,13 +93,15 @@ def main():
         if fall_animation is not None:
             elapsed = pygame.time.get_ticks() - fall_animation["start_time"]
             if elapsed >= FALL_ANIMATION_DURATION_MS:
-                fall_animation, score_delta = try_start_fall(grid)
+                fall_animation, score_delta, new_particles = try_start_fall(grid)
                 score += score_delta
+                particles.extend(new_particles)
             else:
                 fall_animation["progress"] = elapsed / FALL_ANIMATION_DURATION_MS
 
         screen.fill(BACKGROUND_COLOR)
         draw_grid(screen, grid, selected_cell, swap_animation, fall_animation)
+        particles = update_and_draw_particles(screen, particles, pygame.time.get_ticks())
         score_surface = score_font.render(f"Score: {score}", True, SCORE_COLOR)
         screen.blit(score_surface, SCORE_POSITION)
         pygame.display.flip()
