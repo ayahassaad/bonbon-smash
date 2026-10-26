@@ -39,3 +39,4 @@ PARTICLE_LIFETIME_MS = 400
 PARTICLE_RADIUS = 4
 
 SWAP_SOUND_PATH = "assets/sfx/swap.ogg"
+MATCH_SOUND_PATH = "assets/sfx/match.ogg"
