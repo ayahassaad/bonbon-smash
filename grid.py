@@ -11,6 +11,8 @@ from constants import (
     BOARD_OFFSET_Y,
     SELECTION_COLOR,
     SELECTION_BORDER_WIDTH,
+    MATCH_HIGHLIGHT_COLOR,
+    MATCH_HIGHLIGHT_WIDTH,
 )
 
 
@@ -21,7 +23,8 @@ def create_grid():
     ]
 
 
-def draw_grid(surface, grid, selected_cell=None):
+def draw_grid(surface, grid, selected_cell=None, matched_cells=None):
+    matched_cells = matched_cells or set()
     for row in range(GRID_ROWS):
         for col in range(GRID_COLS):
             color = CANDY_COLORS[grid[row][col]]
@@ -32,6 +35,8 @@ def draw_grid(surface, grid, selected_cell=None):
                 TILE_SIZE,
             )
             pygame.draw.rect(surface, color, rect)
+            if (row, col) in matched_cells:
+                pygame.draw.rect(surface, MATCH_HIGHLIGHT_COLOR, rect, MATCH_HIGHLIGHT_WIDTH)
             if selected_cell == (row, col):
                 pygame.draw.rect(surface, SELECTION_COLOR, rect, SELECTION_BORDER_WIDTH)
 
@@ -53,3 +58,31 @@ def swap_cells(grid, cell_a, cell_b):
     row_a, col_a = cell_a
     row_b, col_b = cell_b
     grid[row_a][col_a], grid[row_b][col_b] = grid[row_b][col_b], grid[row_a][col_a]
+
+
+def find_matches(grid):
+    matched = set()
+
+    for row in range(GRID_ROWS):
+        col = 0
+        while col < GRID_COLS:
+            match_color = grid[row][col]
+            match_start = col
+            while col < GRID_COLS and grid[row][col] == match_color:
+                col += 1
+            if col - match_start >= 3:
+                for c in range(match_start, col):
+                    matched.add((row, c))
+
+    for col in range(GRID_COLS):
+        row = 0
+        while row < GRID_ROWS:
+            match_color = grid[row][col]
+            match_start = row
+            while row < GRID_ROWS and grid[row][col] == match_color:
+                row += 1
+            if row - match_start >= 3:
+                for r in range(match_start, row):
+                    matched.add((r, col))
+
+    return matched
