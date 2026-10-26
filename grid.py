@@ -45,6 +45,11 @@ def pixel_to_cell(pos):
     return row, col
 
 
+def is_within_grid(cell):
+    row, col = cell
+    return 0 <= row < GRID_ROWS and 0 <= col < GRID_COLS
+
+
 def is_adjacent(cell_a, cell_b):
     row_a, col_a = cell_a
     row_b, col_b = cell_b

@@ -5,6 +5,7 @@ from grid import (
     create_grid,
     draw_grid,
     pixel_to_cell,
+    is_within_grid,
     is_adjacent,
     swap_cells,
     find_matches,
@@ -28,6 +29,8 @@ def main():
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 clicked_cell = pixel_to_cell(event.pos)
+                if not is_within_grid(clicked_cell):
+                    continue
                 if selected_cell is None:
                     selected_cell = clicked_cell
                 elif clicked_cell == selected_cell:
