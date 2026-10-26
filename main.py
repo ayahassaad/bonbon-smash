@@ -8,6 +8,9 @@ from grid import (
     is_adjacent,
     swap_cells,
     find_matches,
+    clear_matches,
+    apply_gravity,
+    refill_empty,
 )
 
 
@@ -19,7 +22,6 @@ def main():
 
     grid = create_grid()
     selected_cell = None
-    matched_cells = set()
 
     running = True
     while running:
@@ -35,14 +37,18 @@ def main():
                 elif is_adjacent(selected_cell, clicked_cell):
                     swap_cells(grid, selected_cell, clicked_cell)
                     matched_cells = find_matches(grid)
-                    if not matched_cells:
+                    if matched_cells:
+                        clear_matches(grid, matched_cells)
+                        apply_gravity(grid)
+                        refill_empty(grid)
+                    else:
                         swap_cells(grid, selected_cell, clicked_cell)
                     selected_cell = None
                 else:
                     selected_cell = clicked_cell
 
         screen.fill(BACKGROUND_COLOR)
-        draw_grid(screen, grid, selected_cell, matched_cells)
+        draw_grid(screen, grid, selected_cell)
         pygame.display.flip()
         clock.tick(60)
 
