@@ -40,3 +40,4 @@ PARTICLE_RADIUS = 4
 
 SWAP_SOUND_PATH = "assets/sfx/swap.ogg"
 MATCH_SOUND_PATH = "assets/sfx/match.ogg"
+CASCADE_SOUND_PATH = "assets/sfx/cascade.ogg"

@@ -12,6 +12,7 @@ from constants import (
     FALL_ANIMATION_DURATION_MS,
     SWAP_SOUND_PATH,
     MATCH_SOUND_PATH,
+    CASCADE_SOUND_PATH,
 )
 from grid import (
     create_grid,
@@ -47,6 +48,7 @@ def main():
     score_font = pygame.font.SysFont(None, SCORE_FONT_SIZE)
     swap_sound = pygame.mixer.Sound(SWAP_SOUND_PATH)
     match_sound = pygame.mixer.Sound(MATCH_SOUND_PATH)
+    cascade_sound = pygame.mixer.Sound(CASCADE_SOUND_PATH)
 
     grid = create_grid()
     selected_cell = None
@@ -100,6 +102,8 @@ def main():
             elapsed = pygame.time.get_ticks() - fall_animation["start_time"]
             if elapsed >= FALL_ANIMATION_DURATION_MS:
                 fall_animation, score_delta, new_particles = try_start_fall(grid)
+                if fall_animation is not None:
+                    cascade_sound.play()
                 score += score_delta
                 particles.extend(new_particles)
             else:
