@@ -28,9 +28,21 @@ def cell_to_pixel(cell):
     return x, y
 
 
-def draw_grid(surface, grid, selected_cell=None):
+def lerp_point(start, end, t):
+    start_x, start_y = start
+    end_x, end_y = end
+    return start_x + (end_x - start_x) * t, start_y + (end_y - start_y) * t
+
+
+def draw_grid(surface, grid, selected_cell=None, swap_animation=None):
+    animating_cells = set()
+    if swap_animation is not None:
+        animating_cells = {swap_animation["cell_a"], swap_animation["cell_b"]}
+
     for row in range(GRID_ROWS):
         for col in range(GRID_COLS):
+            if (row, col) in animating_cells:
+                continue
             if grid[row][col] is None:
                 continue
             color = CANDY_COLORS[grid[row][col]]
@@ -39,6 +51,20 @@ def draw_grid(surface, grid, selected_cell=None):
             pygame.draw.rect(surface, color, rect)
             if selected_cell == (row, col):
                 pygame.draw.rect(surface, SELECTION_COLOR, rect, SELECTION_BORDER_WIDTH)
+
+    if swap_animation is not None:
+        draw_swapping_tiles(surface, grid, swap_animation)
+
+
+def draw_swapping_tiles(surface, grid, swap_animation):
+    cell_a = swap_animation["cell_a"]
+    cell_b = swap_animation["cell_b"]
+    progress = swap_animation["progress"]
+
+    for from_cell, to_cell in ((cell_b, cell_a), (cell_a, cell_b)):
+        color = CANDY_COLORS[grid[to_cell[0]][to_cell[1]]]
+        x, y = lerp_point(cell_to_pixel(from_cell), cell_to_pixel(to_cell), progress)
+        pygame.draw.rect(surface, color, pygame.Rect(x, y, TILE_SIZE, TILE_SIZE))
 
 
 def pixel_to_cell(pos):

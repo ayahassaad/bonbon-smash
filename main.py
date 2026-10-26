@@ -70,9 +70,11 @@ def main():
                 else:
                     swap_cells(grid, swap_animation["cell_a"], swap_animation["cell_b"])
                 swap_animation = None
+            else:
+                swap_animation["progress"] = elapsed / SWAP_ANIMATION_DURATION_MS
 
         screen.fill(BACKGROUND_COLOR)
-        draw_grid(screen, grid, selected_cell)
+        draw_grid(screen, grid, selected_cell, swap_animation)
         score_surface = score_font.render(f"Score: {score}", True, SCORE_COLOR)
         screen.blit(score_surface, SCORE_POSITION)
         pygame.display.flip()
