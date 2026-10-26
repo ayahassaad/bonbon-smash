@@ -1,6 +1,14 @@
 import pygame
 
-from constants import WINDOW_WIDTH, WINDOW_HEIGHT, BACKGROUND_COLOR, SCORE_PER_TILE
+from constants import (
+    WINDOW_WIDTH,
+    WINDOW_HEIGHT,
+    BACKGROUND_COLOR,
+    SCORE_PER_TILE,
+    SCORE_FONT_SIZE,
+    SCORE_COLOR,
+    SCORE_POSITION,
+)
 from grid import (
     create_grid,
     draw_grid,
@@ -18,6 +26,7 @@ def main():
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     pygame.display.set_caption("Bonbon Smash")
     clock = pygame.time.Clock()
+    score_font = pygame.font.SysFont(None, SCORE_FONT_SIZE)
 
     grid = create_grid()
     selected_cell = None
@@ -50,6 +59,8 @@ def main():
 
         screen.fill(BACKGROUND_COLOR)
         draw_grid(screen, grid, selected_cell)
+        score_surface = score_font.render(f"Score: {score}", True, SCORE_COLOR)
+        screen.blit(score_surface, SCORE_POSITION)
         pygame.display.flip()
         clock.tick(60)
 
