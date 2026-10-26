@@ -8,6 +8,7 @@ from constants import (
     SCORE_FONT_SIZE,
     SCORE_COLOR,
     SCORE_POSITION,
+    SWAP_ANIMATION_DURATION_MS,
 )
 from grid import (
     create_grid,
@@ -31,6 +32,7 @@ def main():
     grid = create_grid()
     selected_cell = None
     score = 0
+    swap_animation = None
 
     running = True
     while running:
@@ -38,6 +40,8 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
+                if swap_animation is not None:
+                    continue
                 clicked_cell = pixel_to_cell(event.pos)
                 if not is_within_grid(clicked_cell):
                     continue
@@ -47,15 +51,25 @@ def main():
                     selected_cell = None
                 elif is_adjacent(selected_cell, clicked_cell):
                     swap_cells(grid, selected_cell, clicked_cell)
-                    matched_cells = find_matches(grid)
-                    if matched_cells:
-                        cleared_count = resolve_matches(grid, matched_cells)
-                        score += cleared_count * SCORE_PER_TILE
-                    else:
-                        swap_cells(grid, selected_cell, clicked_cell)
+                    swap_animation = {
+                        "cell_a": selected_cell,
+                        "cell_b": clicked_cell,
+                        "start_time": pygame.time.get_ticks(),
+                    }
                     selected_cell = None
                 else:
                     selected_cell = clicked_cell
+
+        if swap_animation is not None:
+            elapsed = pygame.time.get_ticks() - swap_animation["start_time"]
+            if elapsed >= SWAP_ANIMATION_DURATION_MS:
+                matched_cells = find_matches(grid)
+                if matched_cells:
+                    cleared_count = resolve_matches(grid, matched_cells)
+                    score += cleared_count * SCORE_PER_TILE
+                else:
+                    swap_cells(grid, swap_animation["cell_a"], swap_animation["cell_b"])
+                swap_animation = None
 
         screen.fill(BACKGROUND_COLOR)
         draw_grid(screen, grid, selected_cell)
