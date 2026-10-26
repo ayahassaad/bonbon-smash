@@ -12,6 +12,7 @@ from constants import (
     SELECTION_COLOR,
     SELECTION_BORDER_WIDTH,
 )
+from sprites import draw_candy
 
 
 def create_grid():
@@ -47,10 +48,10 @@ def draw_grid(surface, grid, selected_cell=None, swap_animation=None, fall_anima
                 continue
             if grid[row][col] is None:
                 continue
-            color = CANDY_COLORS[grid[row][col]]
+            color_index = grid[row][col]
             x, y = cell_to_pixel((row, col))
             rect = pygame.Rect(x, y, TILE_SIZE, TILE_SIZE)
-            pygame.draw.rect(surface, color, rect)
+            draw_candy(surface, rect, color_index, CANDY_COLORS[color_index])
             if selected_cell == (row, col):
                 pygame.draw.rect(surface, SELECTION_COLOR, rect, SELECTION_BORDER_WIDTH)
 
@@ -66,19 +67,21 @@ def draw_swapping_tiles(surface, grid, swap_animation):
     progress = swap_animation["progress"]
 
     for from_cell, to_cell in ((cell_b, cell_a), (cell_a, cell_b)):
-        color = CANDY_COLORS[grid[to_cell[0]][to_cell[1]]]
+        color_index = grid[to_cell[0]][to_cell[1]]
         x, y = lerp_point(cell_to_pixel(from_cell), cell_to_pixel(to_cell), progress)
-        pygame.draw.rect(surface, color, pygame.Rect(x, y, TILE_SIZE, TILE_SIZE))
+        rect = pygame.Rect(x, y, TILE_SIZE, TILE_SIZE)
+        draw_candy(surface, rect, color_index, CANDY_COLORS[color_index])
 
 
 def draw_falling_tiles(surface, grid, fall_animation):
     progress = fall_animation["progress"]
     for (final_row, col), start_row in fall_animation["offsets"].items():
-        color = CANDY_COLORS[grid[final_row][col]]
+        color_index = grid[final_row][col]
         start_pos = cell_to_pixel((start_row, col))
         end_pos = cell_to_pixel((final_row, col))
         x, y = lerp_point(start_pos, end_pos, progress)
-        pygame.draw.rect(surface, color, pygame.Rect(x, y, TILE_SIZE, TILE_SIZE))
+        rect = pygame.Rect(x, y, TILE_SIZE, TILE_SIZE)
+        draw_candy(surface, rect, color_index, CANDY_COLORS[color_index])
 
 
 def pixel_to_cell(pos):
