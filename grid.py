@@ -21,8 +21,7 @@ def create_grid():
     ]
 
 
-def draw_grid(surface, grid, selected_cell=None, matched_cells=None):
-    matched_cells = matched_cells or set()
+def draw_grid(surface, grid, selected_cell=None):
     for row in range(GRID_ROWS):
         for col in range(GRID_COLS):
             if grid[row][col] is None:
@@ -35,8 +34,6 @@ def draw_grid(surface, grid, selected_cell=None, matched_cells=None):
                 TILE_SIZE,
             )
             pygame.draw.rect(surface, color, rect)
-            if (row, col) in matched_cells:
-                pygame.draw.rect(surface, MATCH_HIGHLIGHT_COLOR, rect, MATCH_HIGHLIGHT_WIDTH)
             if selected_cell == (row, col):
                 pygame.draw.rect(surface, SELECTION_COLOR, rect, SELECTION_BORDER_WIDTH)
 
