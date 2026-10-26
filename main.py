@@ -1,6 +1,6 @@
 import pygame
 
-from constants import WINDOW_WIDTH, WINDOW_HEIGHT, BACKGROUND_COLOR
+from constants import WINDOW_WIDTH, WINDOW_HEIGHT, BACKGROUND_COLOR, SCORE_PER_TILE
 from grid import (
     create_grid,
     draw_grid,
@@ -21,6 +21,7 @@ def main():
 
     grid = create_grid()
     selected_cell = None
+    score = 0
 
     running = True
     while running:
@@ -39,7 +40,8 @@ def main():
                     swap_cells(grid, selected_cell, clicked_cell)
                     matched_cells = find_matches(grid)
                     if matched_cells:
-                        resolve_matches(grid, matched_cells)
+                        cleared_count = resolve_matches(grid, matched_cells)
+                        score += cleared_count * SCORE_PER_TILE
                     else:
                         swap_cells(grid, selected_cell, clicked_cell)
                     selected_cell = None
