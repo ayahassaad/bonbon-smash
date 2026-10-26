@@ -8,9 +8,7 @@ from grid import (
     is_adjacent,
     swap_cells,
     find_matches,
-    clear_matches,
-    apply_gravity,
-    refill_empty,
+    resolve_matches,
 )
 
 
@@ -38,9 +36,7 @@ def main():
                     swap_cells(grid, selected_cell, clicked_cell)
                     matched_cells = find_matches(grid)
                     if matched_cells:
-                        clear_matches(grid, matched_cells)
-                        apply_gravity(grid)
-                        refill_empty(grid)
+                        resolve_matches(grid, matched_cells)
                     else:
                         swap_cells(grid, selected_cell, clicked_cell)
                     selected_cell = None

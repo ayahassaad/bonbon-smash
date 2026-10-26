@@ -104,3 +104,11 @@ def refill_empty(grid):
         for col in range(GRID_COLS):
             if grid[row][col] is None:
                 grid[row][col] = random.randint(0, len(CANDY_COLORS) - 1)
+
+
+def resolve_matches(grid, matched_cells):
+    while matched_cells:
+        clear_matches(grid, matched_cells)
+        apply_gravity(grid)
+        refill_empty(grid)
+        matched_cells = find_matches(grid)
