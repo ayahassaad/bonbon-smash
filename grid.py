@@ -112,8 +112,11 @@ def refill_empty(grid):
 
 
 def resolve_matches(grid, matched_cells):
+    cleared_count = 0
     while matched_cells:
+        cleared_count += len(matched_cells)
         clear_matches(grid, matched_cells)
         apply_gravity(grid)
         refill_empty(grid)
         matched_cells = find_matches(grid)
+    return cleared_count
