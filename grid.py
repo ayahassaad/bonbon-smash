@@ -11,8 +11,6 @@ from constants import (
     BOARD_OFFSET_Y,
     SELECTION_COLOR,
     SELECTION_BORDER_WIDTH,
-    MATCH_HIGHLIGHT_COLOR,
-    MATCH_HIGHLIGHT_WIDTH,
 )
 
 
@@ -27,6 +25,8 @@ def draw_grid(surface, grid, selected_cell=None, matched_cells=None):
     matched_cells = matched_cells or set()
     for row in range(GRID_ROWS):
         for col in range(GRID_COLS):
+            if grid[row][col] is None:
+                continue
             color = CANDY_COLORS[grid[row][col]]
             rect = pygame.Rect(
                 BOARD_OFFSET_X + col * TILE_SIZE,
@@ -86,3 +86,24 @@ def find_matches(grid):
                     matched.add((r, col))
 
     return matched
+
+
+def clear_matches(grid, matched_cells):
+    for row, col in matched_cells:
+        grid[row][col] = None
+
+
+def apply_gravity(grid):
+    for col in range(GRID_COLS):
+        column_values = [grid[row][col] for row in range(GRID_ROWS) if grid[row][col] is not None]
+        empty_count = GRID_ROWS - len(column_values)
+        new_column = [None] * empty_count + column_values
+        for row in range(GRID_ROWS):
+            grid[row][col] = new_column[row]
+
+
+def refill_empty(grid):
+    for row in range(GRID_ROWS):
+        for col in range(GRID_COLS):
+            if grid[row][col] is None:
+                grid[row][col] = random.randint(0, len(CANDY_COLORS) - 1)
