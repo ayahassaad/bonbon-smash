@@ -124,6 +124,18 @@ def clear_matches(grid, matched_cells):
         grid[row][col] = None
 
 
+def compute_fall_offsets(grid):
+    offsets = {}
+    for col in range(GRID_COLS):
+        non_empty_rows = [row for row in range(GRID_ROWS) if grid[row][col] is not None]
+        empty_count = GRID_ROWS - len(non_empty_rows)
+        for i, start_row in enumerate(non_empty_rows):
+            final_row = empty_count + i
+            if final_row != start_row:
+                offsets[(final_row, col)] = start_row
+    return offsets
+
+
 def apply_gravity(grid):
     for col in range(GRID_COLS):
         column_values = [grid[row][col] for row in range(GRID_ROWS) if grid[row][col] is not None]
