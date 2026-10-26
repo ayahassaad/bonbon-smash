@@ -21,18 +21,21 @@ def create_grid():
     ]
 
 
+def cell_to_pixel(cell):
+    row, col = cell
+    x = BOARD_OFFSET_X + col * TILE_SIZE
+    y = BOARD_OFFSET_Y + row * TILE_SIZE
+    return x, y
+
+
 def draw_grid(surface, grid, selected_cell=None):
     for row in range(GRID_ROWS):
         for col in range(GRID_COLS):
             if grid[row][col] is None:
                 continue
             color = CANDY_COLORS[grid[row][col]]
-            rect = pygame.Rect(
-                BOARD_OFFSET_X + col * TILE_SIZE,
-                BOARD_OFFSET_Y + row * TILE_SIZE,
-                TILE_SIZE,
-                TILE_SIZE,
-            )
+            x, y = cell_to_pixel((row, col))
+            rect = pygame.Rect(x, y, TILE_SIZE, TILE_SIZE)
             pygame.draw.rect(surface, color, rect)
             if selected_cell == (row, col):
                 pygame.draw.rect(surface, SELECTION_COLOR, rect, SELECTION_BORDER_WIDTH)
