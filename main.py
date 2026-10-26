@@ -23,6 +23,18 @@ from grid import (
 )
 
 
+def try_start_fall(grid):
+    matched_cells = find_matches(grid)
+    if not matched_cells:
+        return None, 0
+    animation = {
+        "offsets": start_fall(grid, matched_cells),
+        "start_time": pygame.time.get_ticks(),
+        "progress": 0.0,
+    }
+    return animation, len(matched_cells) * SCORE_PER_TILE
+
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -65,14 +77,9 @@ def main():
         if swap_animation is not None:
             elapsed = pygame.time.get_ticks() - swap_animation["start_time"]
             if elapsed >= SWAP_ANIMATION_DURATION_MS:
-                matched_cells = find_matches(grid)
-                if matched_cells:
-                    score += len(matched_cells) * SCORE_PER_TILE
-                    fall_animation = {
-                        "offsets": start_fall(grid, matched_cells),
-                        "start_time": pygame.time.get_ticks(),
-                        "progress": 0.0,
-                    }
+                fall_animation, score_delta = try_start_fall(grid)
+                if fall_animation is not None:
+                    score += score_delta
                 else:
                     swap_cells(grid, swap_animation["cell_a"], swap_animation["cell_b"])
                 swap_animation = None
@@ -82,7 +89,8 @@ def main():
         if fall_animation is not None:
             elapsed = pygame.time.get_ticks() - fall_animation["start_time"]
             if elapsed >= FALL_ANIMATION_DURATION_MS:
-                fall_animation = None
+                fall_animation, score_delta = try_start_fall(grid)
+                score += score_delta
             else:
                 fall_animation["progress"] = elapsed / FALL_ANIMATION_DURATION_MS
 
