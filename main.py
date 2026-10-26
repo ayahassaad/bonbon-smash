@@ -10,6 +10,7 @@ from constants import (
     SCORE_POSITION,
     SWAP_ANIMATION_DURATION_MS,
     FALL_ANIMATION_DURATION_MS,
+    SWAP_SOUND_PATH,
 )
 from grid import (
     create_grid,
@@ -43,6 +44,7 @@ def main():
     pygame.display.set_caption("Bonbon Smash")
     clock = pygame.time.Clock()
     score_font = pygame.font.SysFont(None, SCORE_FONT_SIZE)
+    swap_sound = pygame.mixer.Sound(SWAP_SOUND_PATH)
 
     grid = create_grid()
     selected_cell = None
@@ -68,6 +70,7 @@ def main():
                     selected_cell = None
                 elif is_adjacent(selected_cell, clicked_cell):
                     swap_cells(grid, selected_cell, clicked_cell)
+                    swap_sound.play()
                     swap_animation = {
                         "cell_a": selected_cell,
                         "cell_b": clicked_cell,
