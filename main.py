@@ -1,3 +1,5 @@
+import asyncio
+
 import pygame
 
 from constants import (
@@ -40,7 +42,7 @@ def try_start_fall(grid):
     return animation, len(matched_cells) * SCORE_PER_TILE, new_particles
 
 
-def main():
+async def main():
     pygame.init()
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     pygame.display.set_caption("Bonbon Smash")
@@ -116,9 +118,10 @@ def main():
         screen.blit(score_surface, SCORE_POSITION)
         pygame.display.flip()
         clock.tick(60)
+        await asyncio.sleep(0)
 
     pygame.quit()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
