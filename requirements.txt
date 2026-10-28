@@ -1,1 +1,2 @@
 pygame-ce==2.5.8
+pygbag==0.9.3
