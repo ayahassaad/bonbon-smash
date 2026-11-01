@@ -5,15 +5,6 @@ import pygame
 SHAPES = ["circle", "diamond", "star", "square", "triangle", "hexagon"]
 
 
-def lighten(color, amount=0.4):
-    r, g, b = color
-    return (
-        int(r + (255 - r) * amount),
-        int(g + (255 - g) * amount),
-        int(b + (255 - b) * amount),
-    )
-
-
 def darken(color, amount=0.3):
     r, g, b = color
     return (
@@ -59,9 +50,6 @@ def draw_candy(surface, rect, color_index, color):
     center = rect.center
     radius = rect.width * 0.38
     outline_color = darken(color, 0.35)
-    highlight_color = lighten(color, 0.45)
-    highlight_center = (center[0] - radius * 0.3, center[1] - radius * 0.3)
-    highlight_radius = radius * 0.35
 
     if shape == "circle":
         pygame.draw.circle(surface, color, center, radius)
@@ -77,5 +65,3 @@ def draw_candy(surface, rect, color_index, color):
         points = get_shape_points(shape, center, radius)
         pygame.draw.polygon(surface, color, points)
         pygame.draw.polygon(surface, outline_color, points, 2)
-
-    pygame.draw.circle(surface, highlight_color, highlight_center, highlight_radius)
