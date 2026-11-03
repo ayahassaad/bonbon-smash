@@ -22,6 +22,8 @@ from constants import (
     STATE_MENU,
     STATE_LEVEL_SELECT,
     STATE_PLAYING,
+    STATE_LEVEL_COMPLETE,
+    STATE_GAME_OVER,
 )
 from grid import (
     create_grid,
@@ -35,7 +37,7 @@ from grid import (
 )
 from particles import spawn_particles_for_matches, update_and_draw_particles
 from levels import LEVELS, load_unlocked_level
-from screens import draw_menu, draw_level_select
+from screens import draw_menu, draw_level_select, draw_level_complete, draw_game_over
 
 
 def try_start_fall(grid):
@@ -124,6 +126,17 @@ async def main():
                         selected_cell = None
                     else:
                         selected_cell = clicked_cell
+                elif state == STATE_LEVEL_COMPLETE:
+                    if buttons.get("next") and buttons["next"].collidepoint(event.pos):
+                        if current_level + 1 < len(LEVELS):
+                            start_level(current_level + 1)
+                            state = STATE_PLAYING
+                        else:
+                            state = STATE_MENU
+                elif state == STATE_GAME_OVER:
+                    if buttons.get("retry") and buttons["retry"].collidepoint(event.pos):
+                        start_level(current_level)
+                        state = STATE_PLAYING
 
         if state == STATE_PLAYING and swap_animation is not None:
             elapsed = pygame.time.get_ticks() - swap_animation["start_time"]
@@ -151,6 +164,13 @@ async def main():
             else:
                 fall_animation["progress"] = elapsed / FALL_ANIMATION_DURATION_MS
 
+        if state == STATE_PLAYING and swap_animation is None and fall_animation is None:
+            target_score = LEVELS[current_level]["target_score"]
+            if score >= target_score:
+                state = STATE_LEVEL_COMPLETE
+            elif moves_remaining <= 0:
+                state = STATE_GAME_OVER
+
         screen.fill(BACKGROUND_COLOR)
         buttons = {}
         if state == STATE_MENU:
@@ -164,6 +184,14 @@ async def main():
             screen.blit(score_surface, SCORE_POSITION)
             moves_surface = score_font.render(f"Moves: {moves_remaining}", True, MOVES_COLOR)
             screen.blit(moves_surface, MOVES_POSITION)
+        elif state == STATE_LEVEL_COMPLETE:
+            buttons = draw_level_complete(
+                screen, title_font, button_font, score, current_level + 1 >= len(LEVELS)
+            )
+        elif state == STATE_GAME_OVER:
+            buttons = draw_game_over(
+                screen, title_font, button_font, score, LEVELS[current_level]["target_score"]
+            )
         pygame.display.flip()
         clock.tick(60)
         await asyncio.sleep(0)
