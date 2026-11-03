@@ -10,6 +10,8 @@ from constants import (
     SCORE_FONT_SIZE,
     SCORE_COLOR,
     SCORE_POSITION,
+    MOVES_COLOR,
+    MOVES_POSITION,
     TITLE_FONT_SIZE,
     BUTTON_FONT_SIZE,
     SWAP_ANIMATION_DURATION_MS,
@@ -32,7 +34,7 @@ from grid import (
     start_fall,
 )
 from particles import spawn_particles_for_matches, update_and_draw_particles
-from levels import load_unlocked_level
+from levels import LEVELS, load_unlocked_level
 from screens import draw_menu, draw_level_select
 
 
@@ -68,6 +70,7 @@ async def main():
     grid = None
     selected_cell = None
     score = 0
+    moves_remaining = 0
     swap_animation = None
     fall_animation = None
     particles = []
@@ -75,11 +78,12 @@ async def main():
     level_rects = {}
 
     def start_level(level_index):
-        nonlocal grid, selected_cell, score, swap_animation, fall_animation, particles, current_level
+        nonlocal grid, selected_cell, score, moves_remaining, swap_animation, fall_animation, particles, current_level
         current_level = level_index
         grid = create_grid()
         selected_cell = None
         score = 0
+        moves_remaining = LEVELS[level_index]["move_limit"]
         swap_animation = None
         fall_animation = None
         particles = []
@@ -128,6 +132,7 @@ async def main():
                 if fall_animation is not None:
                     match_sound.play()
                     score += score_delta
+                    moves_remaining -= 1
                     particles.extend(new_particles)
                 else:
                     swap_cells(grid, swap_animation["cell_a"], swap_animation["cell_b"])
@@ -157,6 +162,8 @@ async def main():
             particles = update_and_draw_particles(screen, particles, pygame.time.get_ticks())
             score_surface = score_font.render(f"Score: {score}", True, SCORE_COLOR)
             screen.blit(score_surface, SCORE_POSITION)
+            moves_surface = score_font.render(f"Moves: {moves_remaining}", True, MOVES_COLOR)
+            screen.blit(moves_surface, MOVES_POSITION)
         pygame.display.flip()
         clock.tick(60)
         await asyncio.sleep(0)
