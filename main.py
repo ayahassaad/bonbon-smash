@@ -36,7 +36,7 @@ from grid import (
     start_fall,
 )
 from particles import spawn_particles_for_matches, update_and_draw_particles
-from levels import LEVELS, load_unlocked_level
+from levels import LEVELS, load_unlocked_level, save_unlocked_level
 from screens import draw_menu, draw_level_select, draw_level_complete, draw_game_over
 
 
@@ -167,6 +167,10 @@ async def main():
         if state == STATE_PLAYING and swap_animation is None and fall_animation is None:
             target_score = LEVELS[current_level]["target_score"]
             if score >= target_score:
+                newly_unlocked = min(current_level + 1, len(LEVELS) - 1)
+                if newly_unlocked > unlocked_level:
+                    unlocked_level = newly_unlocked
+                    save_unlocked_level(unlocked_level)
                 state = STATE_LEVEL_COMPLETE
             elif moves_remaining <= 0:
                 state = STATE_GAME_OVER
