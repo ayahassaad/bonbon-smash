@@ -8,7 +8,14 @@ from constants import (
     BUTTON_HEIGHT,
     BUTTON_COLOR,
     BUTTON_TEXT_COLOR,
+    LEVEL_BOX_SIZE,
+    LEVEL_BOX_GAP,
+    LEVEL_BOX_COLUMNS,
+    LEVEL_BOX_LOCKED_COLOR,
+    LEVEL_BOX_UNLOCKED_COLOR,
+    LEVEL_BOX_COMPLETE_COLOR,
 )
+from levels import LEVELS
 
 
 def draw_button(surface, rect, label, font):
@@ -27,3 +34,35 @@ def draw_menu(surface, title_font, button_font):
     draw_button(surface, play_rect, "Play", button_font)
 
     return {"play": play_rect}
+
+
+def draw_level_select(surface, title_font, button_font, unlocked_level):
+    title_surface = title_font.render("Select Level", True, TITLE_COLOR)
+    surface.blit(title_surface, title_surface.get_rect(center=(WINDOW_WIDTH // 2, 60)))
+
+    total_width = LEVEL_BOX_COLUMNS * LEVEL_BOX_SIZE + (LEVEL_BOX_COLUMNS - 1) * LEVEL_BOX_GAP
+    start_x = (WINDOW_WIDTH - total_width) // 2
+    start_y = 130
+
+    level_rects = {}
+    for index in range(len(LEVELS)):
+        row, col = divmod(index, LEVEL_BOX_COLUMNS)
+        x = start_x + col * (LEVEL_BOX_SIZE + LEVEL_BOX_GAP)
+        y = start_y + row * (LEVEL_BOX_SIZE + LEVEL_BOX_GAP)
+        rect = pygame.Rect(x, y, LEVEL_BOX_SIZE, LEVEL_BOX_SIZE)
+
+        if index < unlocked_level:
+            color = LEVEL_BOX_COMPLETE_COLOR
+        elif index == unlocked_level:
+            color = LEVEL_BOX_UNLOCKED_COLOR
+        else:
+            color = LEVEL_BOX_LOCKED_COLOR
+        pygame.draw.rect(surface, color, rect, border_radius=8)
+
+        label_surface = button_font.render(str(index + 1), True, BUTTON_TEXT_COLOR)
+        surface.blit(label_surface, label_surface.get_rect(center=rect.center))
+
+        if index <= unlocked_level:
+            level_rects[index] = rect
+
+    return level_rects
