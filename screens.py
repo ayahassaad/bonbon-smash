@@ -66,3 +66,31 @@ def draw_level_select(surface, title_font, button_font, unlocked_level):
             level_rects[index] = rect
 
     return level_rects
+
+
+def draw_level_complete(surface, title_font, button_font, score, is_last_level):
+    title_surface = title_font.render("Level Complete!", True, TITLE_COLOR)
+    surface.blit(title_surface, title_surface.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 90)))
+
+    score_surface = button_font.render(f"Score: {score}", True, BUTTON_TEXT_COLOR)
+    surface.blit(score_surface, score_surface.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 30)))
+
+    next_rect = pygame.Rect(0, 0, BUTTON_WIDTH, BUTTON_HEIGHT)
+    next_rect.center = (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 40)
+    draw_button(surface, next_rect, "Menu" if is_last_level else "Next Level", button_font)
+
+    return {"next": next_rect}
+
+
+def draw_game_over(surface, title_font, button_font, score, target_score):
+    title_surface = title_font.render("Out of Moves", True, TITLE_COLOR)
+    surface.blit(title_surface, title_surface.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 90)))
+
+    score_surface = button_font.render(f"Score: {score} / {target_score}", True, BUTTON_TEXT_COLOR)
+    surface.blit(score_surface, score_surface.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 30)))
+
+    retry_rect = pygame.Rect(0, 0, BUTTON_WIDTH, BUTTON_HEIGHT)
+    retry_rect.center = (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 40)
+    draw_button(surface, retry_rect, "Retry", button_font)
+
+    return {"retry": retry_rect}
