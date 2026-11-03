@@ -41,3 +41,11 @@ PARTICLE_RADIUS = 4
 SWAP_SOUND_PATH = "assets/sfx/swap.ogg"
 MATCH_SOUND_PATH = "assets/sfx/match.ogg"
 CASCADE_SOUND_PATH = "assets/sfx/cascade.ogg"
+
+STATE_MENU = "menu"
+STATE_LEVEL_SELECT = "level_select"
+STATE_PLAYING = "playing"
+STATE_LEVEL_COMPLETE = "level_complete"
+STATE_GAME_OVER = "game_over"
+
+SAVE_PATH = "save_data.json"
