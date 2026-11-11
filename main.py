@@ -26,6 +26,8 @@ from constants import (
     STATE_PLAYING,
     STATE_LEVEL_COMPLETE,
     STATE_GAME_OVER,
+    FADE_DURATION_MS,
+    FADE_COLOR,
 )
 from grid import (
     create_grid,
@@ -60,6 +62,9 @@ async def main():
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     pygame.display.set_caption("Bonbon Smash")
     clock = pygame.time.Clock()
+    fade_overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+    fade_overlay.fill(FADE_COLOR)
+    fade_start_time = pygame.time.get_ticks()
     score_font = pygame.font.SysFont(None, SCORE_FONT_SIZE)
     title_font = pygame.font.SysFont(None, TITLE_FONT_SIZE)
     button_font = pygame.font.SysFont(None, BUTTON_FONT_SIZE)
@@ -70,6 +75,7 @@ async def main():
     lose_sound = pygame.mixer.Sound(LOSE_SOUND_PATH)
 
     state = STATE_MENU
+    previous_state = state
     unlocked_level = load_unlocked_level()
     current_level = 0
 
@@ -187,6 +193,10 @@ async def main():
                 lose_sound.play()
                 state = STATE_GAME_OVER
 
+        if state != previous_state:
+            fade_start_time = pygame.time.get_ticks()
+            previous_state = state
+
         screen.fill(BACKGROUND_COLOR)
         buttons = {}
         if state == STATE_MENU:
@@ -210,6 +220,12 @@ async def main():
             buttons = draw_game_over(
                 screen, title_font, button_font, score, LEVELS[current_level]["target_score"]
             )
+
+        fade_elapsed = pygame.time.get_ticks() - fade_start_time
+        if fade_elapsed < FADE_DURATION_MS:
+            fade_overlay.set_alpha(int(255 * (1 - fade_elapsed / FADE_DURATION_MS)))
+            screen.blit(fade_overlay, (0, 0))
+
         pygame.display.flip()
         clock.tick(60)
         await asyncio.sleep(0)
