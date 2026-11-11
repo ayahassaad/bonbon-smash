@@ -104,11 +104,14 @@ async def main():
                     if buttons.get("play") and buttons["play"].collidepoint(event.pos):
                         state = STATE_LEVEL_SELECT
                 elif state == STATE_LEVEL_SELECT:
-                    for index, rect in level_rects.items():
-                        if rect.collidepoint(event.pos):
-                            start_level(index)
-                            state = STATE_PLAYING
-                            break
+                    if buttons.get("back") and buttons["back"].collidepoint(event.pos):
+                        state = STATE_MENU
+                    else:
+                        for index, rect in level_rects.items():
+                            if rect.collidepoint(event.pos):
+                                start_level(index)
+                                state = STATE_PLAYING
+                                break
                 elif state == STATE_PLAYING:
                     if swap_animation is not None or fall_animation is not None:
                         continue
@@ -186,7 +189,8 @@ async def main():
         if state == STATE_MENU:
             buttons = draw_menu(screen, title_font, button_font)
         elif state == STATE_LEVEL_SELECT:
-            level_rects = draw_level_select(screen, title_font, button_font, unlocked_level)
+            level_rects, back_rect = draw_level_select(screen, title_font, button_font, unlocked_level)
+            buttons = {"back": back_rect}
         elif state == STATE_PLAYING:
             draw_grid(screen, grid, selected_cell, swap_animation, fall_animation)
             particles = update_and_draw_particles(screen, particles, pygame.time.get_ticks())

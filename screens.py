@@ -74,7 +74,9 @@ def draw_level_select(surface, title_font, button_font, unlocked_level):
         if index <= unlocked_level:
             level_rects[index] = rect
 
-    return level_rects
+    back_rect = draw_back_button(surface, button_font, "Menu")
+
+    return level_rects, back_rect
 
 
 def draw_level_complete(surface, title_font, button_font, score, is_last_level):
