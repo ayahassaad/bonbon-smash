@@ -41,6 +41,8 @@ PARTICLE_RADIUS = 4
 SWAP_SOUND_PATH = "assets/sfx/swap.ogg"
 MATCH_SOUND_PATH = "assets/sfx/match.ogg"
 CASCADE_SOUND_PATH = "assets/sfx/cascade.ogg"
+WIN_SOUND_PATH = "assets/sfx/win.ogg"
+LOSE_SOUND_PATH = "assets/sfx/lose.ogg"
 
 STATE_MENU = "menu"
 STATE_LEVEL_SELECT = "level_select"
