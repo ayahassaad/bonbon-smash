@@ -14,6 +14,9 @@ from constants import (
     LEVEL_BOX_LOCKED_COLOR,
     LEVEL_BOX_UNLOCKED_COLOR,
     LEVEL_BOX_COMPLETE_COLOR,
+    BACK_BUTTON_WIDTH,
+    BACK_BUTTON_HEIGHT,
+    BACK_BUTTON_MARGIN,
 )
 from levels import LEVELS
 
@@ -22,6 +25,12 @@ def draw_button(surface, rect, label, font):
     pygame.draw.rect(surface, BUTTON_COLOR, rect, border_radius=10)
     text_surface = font.render(label, True, BUTTON_TEXT_COLOR)
     surface.blit(text_surface, text_surface.get_rect(center=rect.center))
+
+
+def draw_back_button(surface, button_font, label="Back"):
+    rect = pygame.Rect(BACK_BUTTON_MARGIN, BACK_BUTTON_MARGIN, BACK_BUTTON_WIDTH, BACK_BUTTON_HEIGHT)
+    draw_button(surface, rect, label, button_font)
+    return rect
 
 
 def draw_menu(surface, title_font, button_font):
