@@ -39,7 +39,7 @@ from grid import (
 )
 from particles import spawn_particles_for_matches, update_and_draw_particles
 from levels import LEVELS, load_unlocked_level, save_unlocked_level
-from screens import draw_menu, draw_level_select, draw_level_complete, draw_game_over
+from screens import draw_menu, draw_level_select, draw_level_complete, draw_game_over, draw_back_button
 
 
 def try_start_fall(grid):
@@ -113,6 +113,9 @@ async def main():
                                 state = STATE_PLAYING
                                 break
                 elif state == STATE_PLAYING:
+                    if buttons.get("back") and buttons["back"].collidepoint(event.pos):
+                        state = STATE_LEVEL_SELECT
+                        continue
                     if swap_animation is not None or fall_animation is not None:
                         continue
                     clicked_cell = pixel_to_cell(event.pos)
@@ -198,6 +201,7 @@ async def main():
             screen.blit(score_surface, SCORE_POSITION)
             moves_surface = score_font.render(f"Moves: {moves_remaining}", True, MOVES_COLOR)
             screen.blit(moves_surface, MOVES_POSITION)
+            buttons = {"back": draw_back_button(screen, button_font)}
         elif state == STATE_LEVEL_COMPLETE:
             buttons = draw_level_complete(
                 screen, title_font, button_font, score, current_level + 1 >= len(LEVELS)
