@@ -19,6 +19,8 @@ from constants import (
     SWAP_SOUND_PATH,
     MATCH_SOUND_PATH,
     CASCADE_SOUND_PATH,
+    WIN_SOUND_PATH,
+    LOSE_SOUND_PATH,
     STATE_MENU,
     STATE_LEVEL_SELECT,
     STATE_PLAYING,
@@ -64,6 +66,8 @@ async def main():
     swap_sound = pygame.mixer.Sound(SWAP_SOUND_PATH)
     match_sound = pygame.mixer.Sound(MATCH_SOUND_PATH)
     cascade_sound = pygame.mixer.Sound(CASCADE_SOUND_PATH)
+    win_sound = pygame.mixer.Sound(WIN_SOUND_PATH)
+    lose_sound = pygame.mixer.Sound(LOSE_SOUND_PATH)
 
     state = STATE_MENU
     unlocked_level = load_unlocked_level()
@@ -171,8 +175,10 @@ async def main():
                 if newly_unlocked > unlocked_level:
                     unlocked_level = newly_unlocked
                     save_unlocked_level(unlocked_level)
+                win_sound.play()
                 state = STATE_LEVEL_COMPLETE
             elif moves_remaining <= 0:
+                lose_sound.play()
                 state = STATE_GAME_OVER
 
         screen.fill(BACKGROUND_COLOR)
