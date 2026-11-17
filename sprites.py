@@ -42,6 +42,35 @@ def star_points(center, outer_radius, inner_radius, rotation=-math.pi / 2):
     return points
 
 
+_glow_cache = {}
+
+
+def get_glow_surface(color, radius):
+    key = (color, round(radius))
+    if key in _glow_cache:
+        return _glow_cache[key]
+
+    size = int(radius * 4)
+    glow_surface = pygame.Surface((size, size), pygame.SRCALPHA)
+    glow_center = (size // 2, size // 2)
+    layers = [(radius * 2.0, 16), (radius * 1.5, 30), (radius * 1.1, 55)]
+    for layer_radius, alpha in layers:
+        pygame.draw.circle(glow_surface, (*color, alpha), glow_center, layer_radius)
+
+    _glow_cache[key] = glow_surface
+    return glow_surface
+
+
+def draw_glow(surface, center, color, radius):
+    glow_surface = get_glow_surface(color, radius)
+    size = glow_surface.get_width()
+    surface.blit(
+        glow_surface,
+        (center[0] - size // 2, center[1] - size // 2),
+        special_flags=pygame.BLEND_RGBA_ADD,
+    )
+
+
 def get_shape_points(shape, center, radius):
     if shape == "diamond":
         return regular_polygon_points(center, radius, 4, rotation=-math.pi / 4)
@@ -59,6 +88,8 @@ def draw_candy(surface, rect, color_index, color, special=None):
     center = rect.center
     radius = rect.width * 0.38
     outline_color = darken(color, 0.35)
+
+    draw_glow(surface, center, color, radius)
 
     if shape == "circle":
         pygame.draw.circle(surface, color, center, radius)
