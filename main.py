@@ -36,7 +36,7 @@ from grid import (
     is_within_grid,
     is_adjacent,
     swap_cells,
-    find_matches,
+    analyze_matches,
     start_fall,
 )
 from particles import spawn_particles_for_matches, update_and_draw_particles
@@ -45,12 +45,12 @@ from screens import draw_menu, draw_level_select, draw_level_complete, draw_game
 
 
 def try_start_fall(grid):
-    matched_cells = find_matches(grid)
+    matched_cells, special_spawns = analyze_matches(grid)
     if not matched_cells:
         return None, 0, []
     new_particles = spawn_particles_for_matches(grid, matched_cells)
     animation = {
-        "offsets": start_fall(grid, matched_cells),
+        "offsets": start_fall(grid, matched_cells, special_spawns),
         "start_time": pygame.time.get_ticks(),
         "progress": 0.0,
     }
