@@ -147,6 +147,55 @@ def find_matches(grid):
     return matched
 
 
+def expand_special_effects(grid, matched_cells):
+    matched = set(matched_cells)
+    frontier = set(matched_cells)
+
+    while frontier:
+        triggered = set()
+        for row, col in frontier:
+            candy = grid[row][col]
+            if candy is None:
+                continue
+            special = candy["special"]
+            if special == "row":
+                triggered.update((row, c) for c in range(GRID_COLS))
+            elif special == "col":
+                triggered.update((r, col) for r in range(GRID_ROWS))
+            elif special == "bomb":
+                color = candy["color"]
+                triggered.update(
+                    (r, c)
+                    for r in range(GRID_ROWS)
+                    for c in range(GRID_COLS)
+                    if grid[r][c] is not None and grid[r][c]["color"] == color
+                )
+        triggered -= matched
+        matched |= triggered
+        frontier = triggered
+
+    return matched
+
+
+def analyze_matches(grid):
+    runs = find_match_runs(grid)
+    if not runs:
+        return set(), {}
+
+    base_matched = set()
+    special_spawns = {}
+    for run in runs:
+        cells = run["cells"]
+        base_matched.update(cells)
+        if len(cells) >= 4:
+            spawn_cell = cells[len(cells) // 2]
+            special_type = "bomb" if len(cells) >= 5 else run["orientation"]
+            special_spawns[spawn_cell] = (run["color"], special_type)
+
+    matched_cells = expand_special_effects(grid, base_matched)
+    return matched_cells, special_spawns
+
+
 def clear_matches(grid, matched_cells):
     for row, col in matched_cells:
         grid[row][col] = None
