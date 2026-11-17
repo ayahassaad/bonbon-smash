@@ -54,7 +54,7 @@ def create_grid():
                 forbidden.add(grid[row][col - 1]["color"])
             if row >= 2 and grid[row - 1][col]["color"] == grid[row - 2][col]["color"]:
                 forbidden.add(grid[row - 1][col]["color"])
-            choices = [c for c in range(colors) if c not in forbidden]
+            choices = [c for c in range(colors) if c not in forbidden] or list(range(colors))
             grid[row][col] = make_candy(random.choice(choices))
     return grid
 
