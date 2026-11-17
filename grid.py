@@ -112,8 +112,8 @@ def swap_cells(grid, cell_a, cell_b):
     grid[row_a][col_a], grid[row_b][col_b] = grid[row_b][col_b], grid[row_a][col_a]
 
 
-def find_matches(grid):
-    matched = set()
+def find_match_runs(grid):
+    runs = []
 
     for row in range(GRID_ROWS):
         col = 0
@@ -123,8 +123,8 @@ def find_matches(grid):
             while col < GRID_COLS and grid[row][col]["color"] == match_color:
                 col += 1
             if col - match_start >= 3:
-                for c in range(match_start, col):
-                    matched.add((row, c))
+                cells = [(row, c) for c in range(match_start, col)]
+                runs.append({"cells": cells, "orientation": "row", "color": match_color})
 
     for col in range(GRID_COLS):
         row = 0
@@ -134,9 +134,16 @@ def find_matches(grid):
             while row < GRID_ROWS and grid[row][col]["color"] == match_color:
                 row += 1
             if row - match_start >= 3:
-                for r in range(match_start, row):
-                    matched.add((r, col))
+                cells = [(r, col) for r in range(match_start, row)]
+                runs.append({"cells": cells, "orientation": "col", "color": match_color})
 
+    return runs
+
+
+def find_matches(grid):
+    matched = set()
+    for run in find_match_runs(grid):
+        matched.update(run["cells"])
     return matched
 
 
