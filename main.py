@@ -15,7 +15,8 @@ from constants import (
     TITLE_FONT_SIZE,
     BUTTON_FONT_SIZE,
     SWAP_ANIMATION_DURATION_MS,
-    FALL_ANIMATION_DURATION_MS,
+    FALL_SPEED_PIXELS_PER_SEC,
+    MIN_FALL_DURATION_MS,
     SWAP_SOUND_PATH,
     MATCH_SOUND_PATH,
     CASCADE_SOUND_PATH,
@@ -42,6 +43,7 @@ from grid import (
     analyze_matches,
     start_fall,
     has_possible_moves,
+    get_tile_size,
 )
 from particles import spawn_particles_for_matches, update_and_draw_particles
 from levels import (
@@ -69,8 +71,15 @@ def try_start_fall(grid):
     if not matched_cells:
         return None, 0, []
     new_particles = spawn_particles_for_matches(grid, matched_cells)
+    offsets = start_fall(grid, matched_cells, special_spawns)
+    if offsets:
+        max_distance = max(final_row - start_row for (final_row, _col), start_row in offsets.items())
+    else:
+        max_distance = 0
+    duration = max(MIN_FALL_DURATION_MS, max_distance * get_tile_size() / FALL_SPEED_PIXELS_PER_SEC * 1000)
     animation = {
-        "offsets": start_fall(grid, matched_cells, special_spawns),
+        "offsets": offsets,
+        "duration": duration,
         "start_time": pygame.time.get_ticks(),
         "progress": 0.0,
     }
@@ -209,14 +218,15 @@ async def main():
 
         if state == STATE_PLAYING and fall_animation is not None:
             elapsed = pygame.time.get_ticks() - fall_animation["start_time"]
-            if elapsed >= FALL_ANIMATION_DURATION_MS:
+            duration = fall_animation["duration"]
+            if elapsed >= duration:
                 fall_animation, score_delta, new_particles = try_start_fall(grid)
                 if fall_animation is not None:
                     cascade_sound.play()
                 score += score_delta
                 particles.extend(new_particles)
             else:
-                fall_animation["progress"] = elapsed / FALL_ANIMATION_DURATION_MS
+                fall_animation["progress"] = elapsed / duration
 
         if state == STATE_PLAYING and swap_animation is None and fall_animation is None:
             target_score = get_level(current_level)["target_score"]
