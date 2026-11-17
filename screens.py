@@ -105,3 +105,17 @@ def draw_game_over(surface, title_font, button_font, score, target_score):
     draw_button(surface, retry_rect, "Retry", button_font)
 
     return {"retry": retry_rect}
+
+
+def draw_no_moves(surface, title_font, button_font, score):
+    title_surface = title_font.render("No More Moves!", True, TITLE_COLOR)
+    surface.blit(title_surface, title_surface.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 90)))
+
+    score_surface = button_font.render(f"Score: {score}", True, BUTTON_TEXT_COLOR)
+    surface.blit(score_surface, score_surface.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 30)))
+
+    reshuffle_rect = pygame.Rect(0, 0, BUTTON_WIDTH, BUTTON_HEIGHT)
+    reshuffle_rect.center = (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 40)
+    draw_button(surface, reshuffle_rect, "Reshuffle", button_font)
+
+    return {"reshuffle": reshuffle_rect}
