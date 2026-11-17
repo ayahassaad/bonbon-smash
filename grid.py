@@ -20,10 +20,17 @@ def make_candy(color_index, special=None):
 
 
 def create_grid():
-    return [
-        [make_candy(random.randint(0, len(CANDY_COLORS) - 1)) for _ in range(GRID_COLS)]
-        for _ in range(GRID_ROWS)
-    ]
+    grid = [[None for _ in range(GRID_COLS)] for _ in range(GRID_ROWS)]
+    for row in range(GRID_ROWS):
+        for col in range(GRID_COLS):
+            forbidden = set()
+            if col >= 2 and grid[row][col - 1]["color"] == grid[row][col - 2]["color"]:
+                forbidden.add(grid[row][col - 1]["color"])
+            if row >= 2 and grid[row - 1][col]["color"] == grid[row - 2][col]["color"]:
+                forbidden.add(grid[row - 1][col]["color"])
+            choices = [c for c in range(len(CANDY_COLORS)) if c not in forbidden]
+            grid[row][col] = make_candy(random.choice(choices))
+    return grid
 
 
 def cell_to_pixel(cell):
