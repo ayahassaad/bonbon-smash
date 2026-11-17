@@ -14,6 +14,15 @@ def darken(color, amount=0.3):
     )
 
 
+def lighten(color, amount=0.4):
+    r, g, b = color
+    return (
+        int(r + (255 - r) * amount),
+        int(g + (255 - g) * amount),
+        int(b + (255 - b) * amount),
+    )
+
+
 def regular_polygon_points(center, radius, sides, rotation=0.0):
     cx, cy = center
     points = []
@@ -65,3 +74,21 @@ def draw_candy(surface, rect, color_index, color, special=None):
         points = get_shape_points(shape, center, radius)
         pygame.draw.polygon(surface, color, points)
         pygame.draw.polygon(surface, outline_color, points, 2)
+
+    draw_special_overlay(surface, rect, center, radius, color, special)
+
+
+def draw_special_overlay(surface, rect, center, radius, color, special):
+    stripe_color = lighten(color, 0.55)
+
+    if special == "row":
+        stripe_height = rect.height * 0.22
+        stripe_rect = pygame.Rect(rect.left + 4, center[1] - stripe_height / 2, rect.width - 8, stripe_height)
+        pygame.draw.rect(surface, stripe_color, stripe_rect, border_radius=int(stripe_height / 2))
+    elif special == "col":
+        stripe_width = rect.width * 0.22
+        stripe_rect = pygame.Rect(center[0] - stripe_width / 2, rect.top + 4, stripe_width, rect.height - 8)
+        pygame.draw.rect(surface, stripe_color, stripe_rect, border_radius=int(stripe_width / 2))
+    elif special == "bomb":
+        pygame.draw.circle(surface, (255, 255, 255), center, radius * 0.65, 3)
+        pygame.draw.circle(surface, (255, 255, 255), center, radius * 0.32, 2)
