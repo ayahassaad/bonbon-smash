@@ -196,9 +196,12 @@ def analyze_matches(grid):
     return matched_cells, special_spawns
 
 
-def clear_matches(grid, matched_cells):
+def apply_match_results(grid, matched_cells, special_spawns):
+    for (row, col), (color, special_type) in special_spawns.items():
+        grid[row][col] = make_candy(color, special_type)
     for row, col in matched_cells:
-        grid[row][col] = None
+        if (row, col) not in special_spawns:
+            grid[row][col] = None
 
 
 def compute_fall_offsets(grid):
@@ -229,8 +232,8 @@ def refill_empty(grid):
                 grid[row][col] = make_candy(random.randint(0, len(CANDY_COLORS) - 1))
 
 
-def start_fall(grid, matched_cells):
-    clear_matches(grid, matched_cells)
+def start_fall(grid, matched_cells, special_spawns=None):
+    apply_match_results(grid, matched_cells, special_spawns or {})
     offsets = compute_fall_offsets(grid)
     apply_gravity(grid)
     refilled_cells = [
