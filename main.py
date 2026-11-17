@@ -30,6 +30,7 @@ from constants import (
     FADE_COLOR,
 )
 from grid import (
+    configure_board,
     create_grid,
     draw_grid,
     pixel_to_cell,
@@ -94,10 +95,12 @@ async def main():
     def start_level(level_index):
         nonlocal grid, selected_cell, score, moves_remaining, swap_animation, fall_animation, particles, current_level
         current_level = level_index
+        level = LEVELS[level_index]
+        configure_board(level["rows"], level["cols"], level["colors"])
         grid = create_grid()
         selected_cell = None
         score = 0
-        moves_remaining = LEVELS[level_index]["move_limit"]
+        moves_remaining = level["move_limit"]
         swap_animation = None
         fall_animation = None
         particles = []
