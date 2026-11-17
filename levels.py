@@ -8,12 +8,16 @@ MAX_GRID_SIZE = 12
 MIN_COLORS = 4
 MAX_COLORS = 6
 
+BASE_MOVE_LIMIT = 15
+BASE_SCORE_PER_MOVE = 45
+SCORE_PER_MOVE_GROWTH = 1.5
+
 
 def get_level(index):
-    size = min(MIN_GRID_SIZE + index // 2, MAX_GRID_SIZE)
-    colors = min(MIN_COLORS + index // 3, MAX_COLORS)
-    move_limit = 12 + size + index // 2
-    target_score = int(300 * (size - 3) * (1 + index * 0.18))
+    size = min(MIN_GRID_SIZE + index // 3, MAX_GRID_SIZE)
+    colors = min(MIN_COLORS + index // 5, MAX_COLORS)
+    move_limit = BASE_MOVE_LIMIT + size + index // 2
+    target_score = int(move_limit * (BASE_SCORE_PER_MOVE + index * SCORE_PER_MOVE_GROWTH))
     return {
         "rows": size,
         "cols": size,
