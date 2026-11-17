@@ -43,6 +43,9 @@ PARTICLE_SPEED_MAX = 160
 PARTICLE_LIFETIME_MS = 400
 PARTICLE_RADIUS = 4
 
+BEAM_DURATION_MS = 250
+BEAM_THICKNESS = 10
+
 SWAP_SOUND_PATH = "assets/sfx/swap.ogg"
 MATCH_SOUND_PATH = "assets/sfx/match.ogg"
 CASCADE_SOUND_PATH = "assets/sfx/cascade.ogg"

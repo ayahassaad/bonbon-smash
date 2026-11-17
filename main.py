@@ -46,6 +46,7 @@ from grid import (
     get_tile_size,
 )
 from particles import spawn_particles_for_matches, update_and_draw_particles
+from beams import spawn_beams_for_specials, update_and_draw_beams
 from levels import (
     get_level,
     load_unlocked_level,
@@ -67,10 +68,11 @@ from tutorial import build_tutorial_board, TUTORIAL_STEPS
 
 
 def try_start_fall(grid):
-    matched_cells, special_spawns = analyze_matches(grid)
+    matched_cells, special_spawns, activated_specials = analyze_matches(grid)
     if not matched_cells:
-        return None, 0, []
+        return None, 0, [], []
     new_particles = spawn_particles_for_matches(grid, matched_cells)
+    new_beams = spawn_beams_for_specials(activated_specials)
     offsets = start_fall(grid, matched_cells, special_spawns)
     if offsets:
         max_distance = max(final_row - start_row for (final_row, _col), start_row in offsets.items())
@@ -83,7 +85,7 @@ def try_start_fall(grid):
         "start_time": pygame.time.get_ticks(),
         "progress": 0.0,
     }
-    return animation, len(matched_cells) * SCORE_PER_TILE, new_particles
+    return animation, len(matched_cells) * SCORE_PER_TILE, new_particles, new_beams
 
 
 async def main():
@@ -119,11 +121,12 @@ async def main():
     swap_animation = None
     fall_animation = None
     particles = []
+    beams = []
     buttons = {}
     level_rects = {}
 
     def start_level(level_index):
-        nonlocal grid, selected_cell, score, moves_remaining, swap_animation, fall_animation, particles, current_level
+        nonlocal grid, selected_cell, score, moves_remaining, swap_animation, fall_animation, particles, beams, current_level
         current_level = level_index
         level = get_level(level_index)
         configure_board(level["rows"], level["cols"], level["colors"])
@@ -134,6 +137,7 @@ async def main():
         swap_animation = None
         fall_animation = None
         particles = []
+        beams = []
 
     running = True
     while running:
@@ -204,12 +208,13 @@ async def main():
         if state == STATE_PLAYING and swap_animation is not None:
             elapsed = pygame.time.get_ticks() - swap_animation["start_time"]
             if elapsed >= SWAP_ANIMATION_DURATION_MS:
-                fall_animation, score_delta, new_particles = try_start_fall(grid)
+                fall_animation, score_delta, new_particles, new_beams = try_start_fall(grid)
                 if fall_animation is not None:
                     match_sound.play()
                     score += score_delta
                     moves_remaining -= 1
                     particles.extend(new_particles)
+                    beams.extend(new_beams)
                 else:
                     swap_cells(grid, swap_animation["cell_a"], swap_animation["cell_b"])
                 swap_animation = None
@@ -220,11 +225,12 @@ async def main():
             elapsed = pygame.time.get_ticks() - fall_animation["start_time"]
             duration = fall_animation["duration"]
             if elapsed >= duration:
-                fall_animation, score_delta, new_particles = try_start_fall(grid)
+                fall_animation, score_delta, new_particles, new_beams = try_start_fall(grid)
                 if fall_animation is not None:
                     cascade_sound.play()
                 score += score_delta
                 particles.extend(new_particles)
+                beams.extend(new_beams)
             else:
                 fall_animation["progress"] = elapsed / duration
 
@@ -271,6 +277,7 @@ async def main():
         elif state == STATE_PLAYING:
             draw_grid(screen, grid, pygame.time.get_ticks(), selected_cell, swap_animation, fall_animation)
             particles = update_and_draw_particles(screen, particles, pygame.time.get_ticks())
+            beams = update_and_draw_beams(screen, beams, pygame.time.get_ticks())
             target_score = get_level(current_level)["target_score"]
             score_surface = score_font.render(f"Score: {score} / {target_score}", True, SCORE_COLOR)
             screen.blit(score_surface, SCORE_POSITION)

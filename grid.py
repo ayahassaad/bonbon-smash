@@ -40,6 +40,10 @@ def get_tile_size():
     return BOARD["tile_size"]
 
 
+def get_board_dimensions():
+    return BOARD["rows"], BOARD["cols"]
+
+
 def make_candy(color_index, special=None):
     return {"color": color_index, "special": special}
 
@@ -205,14 +209,16 @@ def expand_special_effects(grid, matched_cells):
     rows, cols = BOARD["rows"], BOARD["cols"]
     matched = set(matched_cells)
     frontier = set(matched_cells)
+    activated = []
 
     while frontier:
         triggered = set()
         for row, col in frontier:
             candy = grid[row][col]
-            if candy is None:
+            if candy is None or candy["special"] is None:
                 continue
             special = candy["special"]
+            activated.append({"cell": (row, col), "type": special, "color": candy["color"]})
             if special == "row":
                 triggered.update((row, c) for c in range(cols))
             elif special == "col":
@@ -232,7 +238,7 @@ def expand_special_effects(grid, matched_cells):
         matched |= triggered
         frontier = triggered
 
-    return matched
+    return matched, activated
 
 
 def find_cross_spawns(runs):
@@ -254,7 +260,7 @@ def find_cross_spawns(runs):
 def analyze_matches(grid):
     runs = find_match_runs(grid)
     if not runs:
-        return set(), {}
+        return set(), {}, []
 
     base_matched = set()
     special_spawns = {}
@@ -270,8 +276,8 @@ def analyze_matches(grid):
         if cell not in special_spawns:
             special_spawns[cell] = spawn
 
-    matched_cells = expand_special_effects(grid, base_matched)
-    return matched_cells, special_spawns
+    matched_cells, activated_specials = expand_special_effects(grid, base_matched)
+    return matched_cells, special_spawns, activated_specials
 
 
 def apply_match_results(grid, matched_cells, special_spawns):
