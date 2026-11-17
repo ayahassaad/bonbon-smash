@@ -42,6 +42,7 @@ from grid import (
 from particles import spawn_particles_for_matches, update_and_draw_particles
 from levels import LEVELS, load_unlocked_level, save_unlocked_level
 from screens import draw_menu, draw_level_select, draw_level_complete, draw_game_over, draw_back_button
+from starfield import create_stars, draw_stars
 
 
 def try_start_fall(grid):
@@ -65,6 +66,7 @@ async def main():
     fade_overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
     fade_overlay.fill(FADE_COLOR)
     fade_start_time = pygame.time.get_ticks()
+    stars = create_stars()
     score_font = pygame.font.SysFont(None, SCORE_FONT_SIZE)
     title_font = pygame.font.SysFont(None, TITLE_FONT_SIZE)
     button_font = pygame.font.SysFont(None, BUTTON_FONT_SIZE)
@@ -198,6 +200,7 @@ async def main():
             previous_state = state
 
         screen.fill(BACKGROUND_COLOR)
+        draw_stars(screen, stars, pygame.time.get_ticks())
         buttons = {}
         if state == STATE_MENU:
             buttons = draw_menu(screen, title_font, button_font)
