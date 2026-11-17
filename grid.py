@@ -217,6 +217,9 @@ def expand_special_effects(grid, matched_cells):
                 triggered.update((row, c) for c in range(cols))
             elif special == "col":
                 triggered.update((r, col) for r in range(rows))
+            elif special == "cross":
+                triggered.update((row, c) for c in range(cols))
+                triggered.update((r, col) for r in range(rows))
             elif special == "bomb":
                 color = candy["color"]
                 triggered.update(
@@ -230,6 +233,22 @@ def expand_special_effects(grid, matched_cells):
         frontier = triggered
 
     return matched
+
+
+def find_cross_spawns(runs):
+    row_runs = [r for r in runs if r["orientation"] == "row" and len(r["cells"]) == 3]
+    col_runs = [r for r in runs if r["orientation"] == "col" and len(r["cells"]) == 3]
+
+    cross_spawns = {}
+    for row_run in row_runs:
+        row_cells = set(row_run["cells"])
+        for col_run in col_runs:
+            intersection = row_cells & set(col_run["cells"])
+            if len(intersection) == 1:
+                cell = next(iter(intersection))
+                cross_spawns[cell] = (row_run["color"], "cross")
+
+    return cross_spawns
 
 
 def analyze_matches(grid):
@@ -246,6 +265,10 @@ def analyze_matches(grid):
             spawn_cell = cells[len(cells) // 2]
             special_type = "bomb" if len(cells) >= 5 else run["orientation"]
             special_spawns[spawn_cell] = (run["color"], special_type)
+
+    for cell, spawn in find_cross_spawns(runs).items():
+        if cell not in special_spawns:
+            special_spawns[cell] = spawn
 
     matched_cells = expand_special_effects(grid, base_matched)
     return matched_cells, special_spawns

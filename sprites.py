@@ -107,5 +107,8 @@ def draw_special_overlay(surface, size, center, radius, color, special):
         neon_line(surface, (4, center[1]), (size - 4, center[1]), color)
     elif special == "col":
         neon_line(surface, (center[0], 4), (center[0], size - 4), color)
+    elif special == "cross":
+        neon_line(surface, (4, center[1]), (size - 4, center[1]), color)
+        neon_line(surface, (center[0], 4), (center[0], size - 4), color)
     elif special == "bomb":
         neon_circle(surface, center, radius * 1.15, color)
