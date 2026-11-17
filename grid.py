@@ -14,29 +14,56 @@ from constants import (
 )
 from sprites import draw_candy
 
+BOARD_AREA = GRID_COLS * TILE_SIZE
+
+BOARD = {
+    "rows": GRID_ROWS,
+    "cols": GRID_COLS,
+    "tile_size": TILE_SIZE,
+    "offset_x": BOARD_OFFSET_X,
+    "offset_y": BOARD_OFFSET_Y,
+    "colors": len(CANDY_COLORS),
+}
+
+
+def configure_board(rows, cols, colors):
+    tile_size = BOARD_AREA // max(rows, cols)
+    BOARD["rows"] = rows
+    BOARD["cols"] = cols
+    BOARD["tile_size"] = tile_size
+    BOARD["offset_x"] = (BOARD_AREA - cols * tile_size) // 2
+    BOARD["offset_y"] = BOARD_OFFSET_Y + (BOARD_AREA - rows * tile_size) // 2
+    BOARD["colors"] = colors
+
+
+def get_tile_size():
+    return BOARD["tile_size"]
+
 
 def make_candy(color_index, special=None):
     return {"color": color_index, "special": special}
 
 
 def create_grid():
-    grid = [[None for _ in range(GRID_COLS)] for _ in range(GRID_ROWS)]
-    for row in range(GRID_ROWS):
-        for col in range(GRID_COLS):
+    rows, cols, colors = BOARD["rows"], BOARD["cols"], BOARD["colors"]
+    grid = [[None for _ in range(cols)] for _ in range(rows)]
+    for row in range(rows):
+        for col in range(cols):
             forbidden = set()
             if col >= 2 and grid[row][col - 1]["color"] == grid[row][col - 2]["color"]:
                 forbidden.add(grid[row][col - 1]["color"])
             if row >= 2 and grid[row - 1][col]["color"] == grid[row - 2][col]["color"]:
                 forbidden.add(grid[row - 1][col]["color"])
-            choices = [c for c in range(len(CANDY_COLORS)) if c not in forbidden]
+            choices = [c for c in range(colors) if c not in forbidden]
             grid[row][col] = make_candy(random.choice(choices))
     return grid
 
 
 def cell_to_pixel(cell):
     row, col = cell
-    x = BOARD_OFFSET_X + col * TILE_SIZE
-    y = BOARD_OFFSET_Y + row * TILE_SIZE
+    tile_size = BOARD["tile_size"]
+    x = BOARD["offset_x"] + col * tile_size
+    y = BOARD["offset_y"] + row * tile_size
     return x, y
 
 
@@ -47,21 +74,22 @@ def lerp_point(start, end, t):
 
 
 def draw_grid(surface, grid, now, selected_cell=None, swap_animation=None, fall_animation=None):
+    tile_size = BOARD["tile_size"]
     animating_cells = set()
     if swap_animation is not None:
         animating_cells |= {swap_animation["cell_a"], swap_animation["cell_b"]}
     if fall_animation is not None:
         animating_cells |= set(fall_animation["offsets"].keys())
 
-    for row in range(GRID_ROWS):
-        for col in range(GRID_COLS):
+    for row in range(BOARD["rows"]):
+        for col in range(BOARD["cols"]):
             if (row, col) in animating_cells:
                 continue
             if grid[row][col] is None:
                 continue
             candy = grid[row][col]
             x, y = cell_to_pixel((row, col))
-            rect = pygame.Rect(x, y, TILE_SIZE, TILE_SIZE)
+            rect = pygame.Rect(x, y, tile_size, tile_size)
             draw_candy(surface, rect, candy["color"], CANDY_COLORS[candy["color"]], candy["special"], now)
             if selected_cell == (row, col):
                 pygame.draw.rect(surface, SELECTION_COLOR, rect, SELECTION_BORDER_WIDTH)
@@ -73,6 +101,7 @@ def draw_grid(surface, grid, now, selected_cell=None, swap_animation=None, fall_
 
 
 def draw_swapping_tiles(surface, grid, swap_animation, now):
+    tile_size = BOARD["tile_size"]
     cell_a = swap_animation["cell_a"]
     cell_b = swap_animation["cell_b"]
     progress = swap_animation["progress"]
@@ -80,31 +109,32 @@ def draw_swapping_tiles(surface, grid, swap_animation, now):
     for from_cell, to_cell in ((cell_b, cell_a), (cell_a, cell_b)):
         candy = grid[to_cell[0]][to_cell[1]]
         x, y = lerp_point(cell_to_pixel(from_cell), cell_to_pixel(to_cell), progress)
-        rect = pygame.Rect(x, y, TILE_SIZE, TILE_SIZE)
+        rect = pygame.Rect(x, y, tile_size, tile_size)
         draw_candy(surface, rect, candy["color"], CANDY_COLORS[candy["color"]], candy["special"], now)
 
 
 def draw_falling_tiles(surface, grid, fall_animation, now):
+    tile_size = BOARD["tile_size"]
     progress = fall_animation["progress"]
     for (final_row, col), start_row in fall_animation["offsets"].items():
         candy = grid[final_row][col]
         start_pos = cell_to_pixel((start_row, col))
         end_pos = cell_to_pixel((final_row, col))
         x, y = lerp_point(start_pos, end_pos, progress)
-        rect = pygame.Rect(x, y, TILE_SIZE, TILE_SIZE)
+        rect = pygame.Rect(x, y, tile_size, tile_size)
         draw_candy(surface, rect, candy["color"], CANDY_COLORS[candy["color"]], candy["special"], now)
 
 
 def pixel_to_cell(pos):
     x, y = pos
-    col = (x - BOARD_OFFSET_X) // TILE_SIZE
-    row = (y - BOARD_OFFSET_Y) // TILE_SIZE
+    col = (x - BOARD["offset_x"]) // BOARD["tile_size"]
+    row = (y - BOARD["offset_y"]) // BOARD["tile_size"]
     return row, col
 
 
 def is_within_grid(cell):
     row, col = cell
-    return 0 <= row < GRID_ROWS and 0 <= col < GRID_COLS
+    return 0 <= row < BOARD["rows"] and 0 <= col < BOARD["cols"]
 
 
 def is_adjacent(cell_a, cell_b):
@@ -120,25 +150,26 @@ def swap_cells(grid, cell_a, cell_b):
 
 
 def find_match_runs(grid):
+    rows, cols = BOARD["rows"], BOARD["cols"]
     runs = []
 
-    for row in range(GRID_ROWS):
+    for row in range(rows):
         col = 0
-        while col < GRID_COLS:
+        while col < cols:
             match_color = grid[row][col]["color"]
             match_start = col
-            while col < GRID_COLS and grid[row][col]["color"] == match_color:
+            while col < cols and grid[row][col]["color"] == match_color:
                 col += 1
             if col - match_start >= 3:
                 cells = [(row, c) for c in range(match_start, col)]
                 runs.append({"cells": cells, "orientation": "row", "color": match_color})
 
-    for col in range(GRID_COLS):
+    for col in range(cols):
         row = 0
-        while row < GRID_ROWS:
+        while row < rows:
             match_color = grid[row][col]["color"]
             match_start = row
-            while row < GRID_ROWS and grid[row][col]["color"] == match_color:
+            while row < rows and grid[row][col]["color"] == match_color:
                 row += 1
             if row - match_start >= 3:
                 cells = [(r, col) for r in range(match_start, row)]
@@ -155,6 +186,7 @@ def find_matches(grid):
 
 
 def expand_special_effects(grid, matched_cells):
+    rows, cols = BOARD["rows"], BOARD["cols"]
     matched = set(matched_cells)
     frontier = set(matched_cells)
 
@@ -166,15 +198,15 @@ def expand_special_effects(grid, matched_cells):
                 continue
             special = candy["special"]
             if special == "row":
-                triggered.update((row, c) for c in range(GRID_COLS))
+                triggered.update((row, c) for c in range(cols))
             elif special == "col":
-                triggered.update((r, col) for r in range(GRID_ROWS))
+                triggered.update((r, col) for r in range(rows))
             elif special == "bomb":
                 color = candy["color"]
                 triggered.update(
                     (r, c)
-                    for r in range(GRID_ROWS)
-                    for c in range(GRID_COLS)
+                    for r in range(rows)
+                    for c in range(cols)
                     if grid[r][c] is not None and grid[r][c]["color"] == color
                 )
         triggered -= matched
@@ -212,10 +244,11 @@ def apply_match_results(grid, matched_cells, special_spawns):
 
 
 def compute_fall_offsets(grid):
+    rows, cols = BOARD["rows"], BOARD["cols"]
     offsets = {}
-    for col in range(GRID_COLS):
-        non_empty_rows = [row for row in range(GRID_ROWS) if grid[row][col] is not None]
-        empty_count = GRID_ROWS - len(non_empty_rows)
+    for col in range(cols):
+        non_empty_rows = [row for row in range(rows) if grid[row][col] is not None]
+        empty_count = rows - len(non_empty_rows)
         for i, start_row in enumerate(non_empty_rows):
             final_row = empty_count + i
             if final_row != start_row:
@@ -224,32 +257,35 @@ def compute_fall_offsets(grid):
 
 
 def apply_gravity(grid):
-    for col in range(GRID_COLS):
-        column_values = [grid[row][col] for row in range(GRID_ROWS) if grid[row][col] is not None]
-        empty_count = GRID_ROWS - len(column_values)
+    rows, cols = BOARD["rows"], BOARD["cols"]
+    for col in range(cols):
+        column_values = [grid[row][col] for row in range(rows) if grid[row][col] is not None]
+        empty_count = rows - len(column_values)
         new_column = [None] * empty_count + column_values
-        for row in range(GRID_ROWS):
+        for row in range(rows):
             grid[row][col] = new_column[row]
 
 
 def refill_empty(grid):
-    for row in range(GRID_ROWS):
-        for col in range(GRID_COLS):
+    rows, cols, colors = BOARD["rows"], BOARD["cols"], BOARD["colors"]
+    for row in range(rows):
+        for col in range(cols):
             if grid[row][col] is None:
-                grid[row][col] = make_candy(random.randint(0, len(CANDY_COLORS) - 1))
+                grid[row][col] = make_candy(random.randint(0, colors - 1))
 
 
 def start_fall(grid, matched_cells, special_spawns=None):
+    rows, cols = BOARD["rows"], BOARD["cols"]
     apply_match_results(grid, matched_cells, special_spawns or {})
     offsets = compute_fall_offsets(grid)
     apply_gravity(grid)
     refilled_cells = [
         (row, col)
-        for row in range(GRID_ROWS)
-        for col in range(GRID_COLS)
+        for row in range(rows)
+        for col in range(cols)
         if grid[row][col] is None
     ]
     refill_empty(grid)
     for row, col in refilled_cells:
-        offsets[(row, col)] = row - GRID_ROWS
+        offsets[(row, col)] = row - rows
     return offsets
