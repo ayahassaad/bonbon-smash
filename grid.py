@@ -15,9 +15,13 @@ from constants import (
 from sprites import draw_candy
 
 
+def make_candy(color_index, special=None):
+    return {"color": color_index, "special": special}
+
+
 def create_grid():
     return [
-        [random.randint(0, len(CANDY_COLORS) - 1) for _ in range(GRID_COLS)]
+        [make_candy(random.randint(0, len(CANDY_COLORS) - 1)) for _ in range(GRID_COLS)]
         for _ in range(GRID_ROWS)
     ]
 
@@ -48,10 +52,10 @@ def draw_grid(surface, grid, selected_cell=None, swap_animation=None, fall_anima
                 continue
             if grid[row][col] is None:
                 continue
-            color_index = grid[row][col]
+            candy = grid[row][col]
             x, y = cell_to_pixel((row, col))
             rect = pygame.Rect(x, y, TILE_SIZE, TILE_SIZE)
-            draw_candy(surface, rect, color_index, CANDY_COLORS[color_index])
+            draw_candy(surface, rect, candy["color"], CANDY_COLORS[candy["color"]], candy["special"])
             if selected_cell == (row, col):
                 pygame.draw.rect(surface, SELECTION_COLOR, rect, SELECTION_BORDER_WIDTH)
 
@@ -67,21 +71,21 @@ def draw_swapping_tiles(surface, grid, swap_animation):
     progress = swap_animation["progress"]
 
     for from_cell, to_cell in ((cell_b, cell_a), (cell_a, cell_b)):
-        color_index = grid[to_cell[0]][to_cell[1]]
+        candy = grid[to_cell[0]][to_cell[1]]
         x, y = lerp_point(cell_to_pixel(from_cell), cell_to_pixel(to_cell), progress)
         rect = pygame.Rect(x, y, TILE_SIZE, TILE_SIZE)
-        draw_candy(surface, rect, color_index, CANDY_COLORS[color_index])
+        draw_candy(surface, rect, candy["color"], CANDY_COLORS[candy["color"]], candy["special"])
 
 
 def draw_falling_tiles(surface, grid, fall_animation):
     progress = fall_animation["progress"]
     for (final_row, col), start_row in fall_animation["offsets"].items():
-        color_index = grid[final_row][col]
+        candy = grid[final_row][col]
         start_pos = cell_to_pixel((start_row, col))
         end_pos = cell_to_pixel((final_row, col))
         x, y = lerp_point(start_pos, end_pos, progress)
         rect = pygame.Rect(x, y, TILE_SIZE, TILE_SIZE)
-        draw_candy(surface, rect, color_index, CANDY_COLORS[color_index])
+        draw_candy(surface, rect, candy["color"], CANDY_COLORS[candy["color"]], candy["special"])
 
 
 def pixel_to_cell(pos):
@@ -114,9 +118,9 @@ def find_matches(grid):
     for row in range(GRID_ROWS):
         col = 0
         while col < GRID_COLS:
-            match_color = grid[row][col]
+            match_color = grid[row][col]["color"]
             match_start = col
-            while col < GRID_COLS and grid[row][col] == match_color:
+            while col < GRID_COLS and grid[row][col]["color"] == match_color:
                 col += 1
             if col - match_start >= 3:
                 for c in range(match_start, col):
@@ -125,9 +129,9 @@ def find_matches(grid):
     for col in range(GRID_COLS):
         row = 0
         while row < GRID_ROWS:
-            match_color = grid[row][col]
+            match_color = grid[row][col]["color"]
             match_start = row
-            while row < GRID_ROWS and grid[row][col] == match_color:
+            while row < GRID_ROWS and grid[row][col]["color"] == match_color:
                 row += 1
             if row - match_start >= 3:
                 for r in range(match_start, row):
@@ -166,7 +170,7 @@ def refill_empty(grid):
     for row in range(GRID_ROWS):
         for col in range(GRID_COLS):
             if grid[row][col] is None:
-                grid[row][col] = random.randint(0, len(CANDY_COLORS) - 1)
+                grid[row][col] = make_candy(random.randint(0, len(CANDY_COLORS) - 1))
 
 
 def start_fall(grid, matched_cells):

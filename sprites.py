@@ -45,7 +45,7 @@ def get_shape_points(shape, center, radius):
     return None
 
 
-def draw_candy(surface, rect, color_index, color):
+def draw_candy(surface, rect, color_index, color, special=None):
     shape = SHAPES[color_index % len(SHAPES)]
     center = rect.center
     radius = rect.width * 0.38

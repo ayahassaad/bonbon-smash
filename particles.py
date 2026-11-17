@@ -20,7 +20,7 @@ def spawn_particles_for_matches(grid, matched_cells):
     now = pygame.time.get_ticks()
     for cell in matched_cells:
         row, col = cell
-        color = CANDY_COLORS[grid[row][col]]
+        color = CANDY_COLORS[grid[row][col]["color"]]
         x, y = cell_to_pixel(cell)
         center_x = x + TILE_SIZE / 2
         center_y = y + TILE_SIZE / 2
