@@ -208,7 +208,7 @@ async def main():
             level_rects, back_rect = draw_level_select(screen, title_font, button_font, unlocked_level)
             buttons = {"back": back_rect}
         elif state == STATE_PLAYING:
-            draw_grid(screen, grid, selected_cell, swap_animation, fall_animation)
+            draw_grid(screen, grid, pygame.time.get_ticks(), selected_cell, swap_animation, fall_animation)
             particles = update_and_draw_particles(screen, particles, pygame.time.get_ticks())
             score_surface = score_font.render(f"Score: {score}", True, SCORE_COLOR)
             screen.blit(score_surface, SCORE_POSITION)

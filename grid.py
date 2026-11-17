@@ -39,7 +39,7 @@ def lerp_point(start, end, t):
     return start_x + (end_x - start_x) * t, start_y + (end_y - start_y) * t
 
 
-def draw_grid(surface, grid, selected_cell=None, swap_animation=None, fall_animation=None):
+def draw_grid(surface, grid, now, selected_cell=None, swap_animation=None, fall_animation=None):
     animating_cells = set()
     if swap_animation is not None:
         animating_cells |= {swap_animation["cell_a"], swap_animation["cell_b"]}
@@ -55,17 +55,17 @@ def draw_grid(surface, grid, selected_cell=None, swap_animation=None, fall_anima
             candy = grid[row][col]
             x, y = cell_to_pixel((row, col))
             rect = pygame.Rect(x, y, TILE_SIZE, TILE_SIZE)
-            draw_candy(surface, rect, candy["color"], CANDY_COLORS[candy["color"]], candy["special"])
+            draw_candy(surface, rect, candy["color"], CANDY_COLORS[candy["color"]], candy["special"], now)
             if selected_cell == (row, col):
                 pygame.draw.rect(surface, SELECTION_COLOR, rect, SELECTION_BORDER_WIDTH)
 
     if swap_animation is not None:
-        draw_swapping_tiles(surface, grid, swap_animation)
+        draw_swapping_tiles(surface, grid, swap_animation, now)
     if fall_animation is not None:
-        draw_falling_tiles(surface, grid, fall_animation)
+        draw_falling_tiles(surface, grid, fall_animation, now)
 
 
-def draw_swapping_tiles(surface, grid, swap_animation):
+def draw_swapping_tiles(surface, grid, swap_animation, now):
     cell_a = swap_animation["cell_a"]
     cell_b = swap_animation["cell_b"]
     progress = swap_animation["progress"]
@@ -74,10 +74,10 @@ def draw_swapping_tiles(surface, grid, swap_animation):
         candy = grid[to_cell[0]][to_cell[1]]
         x, y = lerp_point(cell_to_pixel(from_cell), cell_to_pixel(to_cell), progress)
         rect = pygame.Rect(x, y, TILE_SIZE, TILE_SIZE)
-        draw_candy(surface, rect, candy["color"], CANDY_COLORS[candy["color"]], candy["special"])
+        draw_candy(surface, rect, candy["color"], CANDY_COLORS[candy["color"]], candy["special"], now)
 
 
-def draw_falling_tiles(surface, grid, fall_animation):
+def draw_falling_tiles(surface, grid, fall_animation, now):
     progress = fall_animation["progress"]
     for (final_row, col), start_row in fall_animation["offsets"].items():
         candy = grid[final_row][col]
@@ -85,7 +85,7 @@ def draw_falling_tiles(surface, grid, fall_animation):
         end_pos = cell_to_pixel((final_row, col))
         x, y = lerp_point(start_pos, end_pos, progress)
         rect = pygame.Rect(x, y, TILE_SIZE, TILE_SIZE)
-        draw_candy(surface, rect, candy["color"], CANDY_COLORS[candy["color"]], candy["special"])
+        draw_candy(surface, rect, candy["color"], CANDY_COLORS[candy["color"]], candy["special"], now)
 
 
 def pixel_to_cell(pos):
