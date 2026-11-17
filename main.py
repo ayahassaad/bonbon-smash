@@ -27,6 +27,7 @@ from constants import (
     STATE_LEVEL_COMPLETE,
     STATE_GAME_OVER,
     STATE_NO_MOVES,
+    STATE_TUTORIAL,
     FADE_DURATION_MS,
     FADE_COLOR,
 )
@@ -43,16 +44,24 @@ from grid import (
     has_possible_moves,
 )
 from particles import spawn_particles_for_matches, update_and_draw_particles
-from levels import LEVELS, load_unlocked_level, save_unlocked_level
+from levels import (
+    get_level,
+    load_unlocked_level,
+    save_unlocked_level,
+    load_tutorial_seen,
+    mark_tutorial_seen,
+)
 from screens import (
     draw_menu,
-    draw_level_select,
+    draw_level_path,
     draw_level_complete,
     draw_game_over,
     draw_no_moves,
     draw_back_button,
+    draw_tutorial,
 )
 from starfield import create_stars, draw_stars
+from tutorial import build_tutorial_board, TUTORIAL_STEPS
 
 
 def try_start_fall(grid):
@@ -86,9 +95,12 @@ async def main():
     win_sound = pygame.mixer.Sound(WIN_SOUND_PATH)
     lose_sound = pygame.mixer.Sound(LOSE_SOUND_PATH)
 
-    state = STATE_MENU
-    previous_state = state
+    tutorial_board, tutorial_swap_pair = build_tutorial_board()
+    tutorial_step = 0
+
     unlocked_level = load_unlocked_level()
+    state = STATE_MENU if load_tutorial_seen() else STATE_TUTORIAL
+    previous_state = state
     current_level = 0
 
     grid = None
@@ -104,7 +116,7 @@ async def main():
     def start_level(level_index):
         nonlocal grid, selected_cell, score, moves_remaining, swap_animation, fall_animation, particles, current_level
         current_level = level_index
-        level = LEVELS[level_index]
+        level = get_level(level_index)
         configure_board(level["rows"], level["cols"], level["colors"])
         grid = create_grid()
         selected_cell = None
@@ -120,7 +132,17 @@ async def main():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if state == STATE_MENU:
+                if state == STATE_TUTORIAL:
+                    if buttons.get("skip") and buttons["skip"].collidepoint(event.pos):
+                        mark_tutorial_seen()
+                        state = STATE_MENU
+                    elif buttons.get("next") and buttons["next"].collidepoint(event.pos):
+                        if tutorial_step >= len(TUTORIAL_STEPS) - 1:
+                            mark_tutorial_seen()
+                            state = STATE_MENU
+                        else:
+                            tutorial_step += 1
+                elif state == STATE_MENU:
                     if buttons.get("play") and buttons["play"].collidepoint(event.pos):
                         state = STATE_LEVEL_SELECT
                 elif state == STATE_LEVEL_SELECT:
@@ -158,11 +180,8 @@ async def main():
                         selected_cell = clicked_cell
                 elif state == STATE_LEVEL_COMPLETE:
                     if buttons.get("next") and buttons["next"].collidepoint(event.pos):
-                        if current_level + 1 < len(LEVELS):
-                            start_level(current_level + 1)
-                            state = STATE_PLAYING
-                        else:
-                            state = STATE_MENU
+                        start_level(current_level + 1)
+                        state = STATE_PLAYING
                 elif state == STATE_GAME_OVER:
                     if buttons.get("retry") and buttons["retry"].collidepoint(event.pos):
                         start_level(current_level)
@@ -200,9 +219,9 @@ async def main():
                 fall_animation["progress"] = elapsed / FALL_ANIMATION_DURATION_MS
 
         if state == STATE_PLAYING and swap_animation is None and fall_animation is None:
-            target_score = LEVELS[current_level]["target_score"]
+            target_score = get_level(current_level)["target_score"]
             if score >= target_score:
-                newly_unlocked = min(current_level + 1, len(LEVELS) - 1)
+                newly_unlocked = current_level + 1
                 if newly_unlocked > unlocked_level:
                     unlocked_level = newly_unlocked
                     save_unlocked_level(unlocked_level)
@@ -221,27 +240,38 @@ async def main():
         screen.fill(BACKGROUND_COLOR)
         draw_stars(screen, stars, pygame.time.get_ticks())
         buttons = {}
-        if state == STATE_MENU:
+        if state == STATE_TUTORIAL:
+            swap_pair_to_show = tutorial_swap_pair if tutorial_step == 0 else None
+            is_last_step = tutorial_step == len(TUTORIAL_STEPS) - 1
+            buttons = draw_tutorial(
+                screen,
+                title_font,
+                button_font,
+                tutorial_board,
+                swap_pair_to_show,
+                TUTORIAL_STEPS[tutorial_step],
+                is_last_step,
+                pygame.time.get_ticks(),
+            )
+        elif state == STATE_MENU:
             buttons = draw_menu(screen, title_font, button_font)
         elif state == STATE_LEVEL_SELECT:
-            level_rects, back_rect = draw_level_select(screen, title_font, button_font, unlocked_level)
+            level_rects, back_rect = draw_level_path(screen, title_font, button_font, unlocked_level)
             buttons = {"back": back_rect}
         elif state == STATE_PLAYING:
             draw_grid(screen, grid, pygame.time.get_ticks(), selected_cell, swap_animation, fall_animation)
             particles = update_and_draw_particles(screen, particles, pygame.time.get_ticks())
-            target_score = LEVELS[current_level]["target_score"]
+            target_score = get_level(current_level)["target_score"]
             score_surface = score_font.render(f"Score: {score} / {target_score}", True, SCORE_COLOR)
             screen.blit(score_surface, SCORE_POSITION)
             moves_surface = score_font.render(f"Moves: {moves_remaining}", True, MOVES_COLOR)
             screen.blit(moves_surface, MOVES_POSITION)
             buttons = {"back": draw_back_button(screen, button_font)}
         elif state == STATE_LEVEL_COMPLETE:
-            buttons = draw_level_complete(
-                screen, title_font, button_font, score, current_level + 1 >= len(LEVELS)
-            )
+            buttons = draw_level_complete(screen, title_font, button_font, score)
         elif state == STATE_GAME_OVER:
             buttons = draw_game_over(
-                screen, title_font, button_font, score, LEVELS[current_level]["target_score"]
+                screen, title_font, button_font, score, get_level(current_level)["target_score"]
             )
         elif state == STATE_NO_MOVES:
             buttons = draw_no_moves(screen, title_font, button_font, score)
