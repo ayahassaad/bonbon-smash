@@ -1,3 +1,5 @@
+import math
+
 import pygame
 
 from constants import (
@@ -8,17 +10,20 @@ from constants import (
     BUTTON_HEIGHT,
     BUTTON_COLOR,
     BUTTON_TEXT_COLOR,
-    LEVEL_BOX_SIZE,
-    LEVEL_BOX_GAP,
-    LEVEL_BOX_COLUMNS,
-    LEVEL_BOX_LOCKED_COLOR,
-    LEVEL_BOX_UNLOCKED_COLOR,
-    LEVEL_BOX_COMPLETE_COLOR,
+    LEVEL_PATH_VISIBLE_COUNT,
+    LEVEL_PATH_TOP_MARGIN,
+    LEVEL_PATH_VERTICAL_GAP,
+    LEVEL_PATH_AMPLITUDE,
+    LEVEL_PATH_LINE_COLOR,
+    LEVEL_NODE_RADIUS,
+    LEVEL_NODE_LOCKED_COLOR,
+    LEVEL_NODE_UNLOCKED_COLOR,
+    LEVEL_NODE_COMPLETE_COLOR,
     BACK_BUTTON_WIDTH,
     BACK_BUTTON_HEIGHT,
     BACK_BUTTON_MARGIN,
 )
-from levels import LEVELS
+from grid import draw_grid, cell_to_pixel, get_tile_size
 
 
 def draw_button(surface, rect, label, font):
@@ -45,41 +50,51 @@ def draw_menu(surface, title_font, button_font):
     return {"play": play_rect}
 
 
-def draw_level_select(surface, title_font, button_font, unlocked_level):
+def draw_level_path(surface, title_font, button_font, unlocked_level):
     title_surface = title_font.render("Select Level", True, TITLE_COLOR)
-    surface.blit(title_surface, title_surface.get_rect(center=(WINDOW_WIDTH // 2, 60)))
+    surface.blit(title_surface, title_surface.get_rect(center=(WINDOW_WIDTH // 2, 50)))
 
-    total_width = LEVEL_BOX_COLUMNS * LEVEL_BOX_SIZE + (LEVEL_BOX_COLUMNS - 1) * LEVEL_BOX_GAP
-    start_x = (WINDOW_WIDTH - total_width) // 2
-    start_y = 130
+    start = max(0, unlocked_level - LEVEL_PATH_VISIBLE_COUNT // 2)
+    indices = list(range(start, start + LEVEL_PATH_VISIBLE_COUNT))
+
+    positions = {}
+    for i, level_index in enumerate(indices):
+        x = WINDOW_WIDTH // 2 + LEVEL_PATH_AMPLITUDE * math.sin(i * math.pi / 3)
+        y = LEVEL_PATH_TOP_MARGIN + i * LEVEL_PATH_VERTICAL_GAP
+        positions[level_index] = (x, y)
+
+    for i in range(len(indices) - 1):
+        pygame.draw.line(
+            surface, LEVEL_PATH_LINE_COLOR, positions[indices[i]], positions[indices[i + 1]], 4
+        )
 
     level_rects = {}
-    for index in range(len(LEVELS)):
-        row, col = divmod(index, LEVEL_BOX_COLUMNS)
-        x = start_x + col * (LEVEL_BOX_SIZE + LEVEL_BOX_GAP)
-        y = start_y + row * (LEVEL_BOX_SIZE + LEVEL_BOX_GAP)
-        rect = pygame.Rect(x, y, LEVEL_BOX_SIZE, LEVEL_BOX_SIZE)
-
-        if index < unlocked_level:
-            color = LEVEL_BOX_COMPLETE_COLOR
-        elif index == unlocked_level:
-            color = LEVEL_BOX_UNLOCKED_COLOR
+    for level_index in indices:
+        x, y = positions[level_index]
+        if level_index < unlocked_level:
+            color = LEVEL_NODE_COMPLETE_COLOR
+        elif level_index == unlocked_level:
+            color = LEVEL_NODE_UNLOCKED_COLOR
         else:
-            color = LEVEL_BOX_LOCKED_COLOR
-        pygame.draw.rect(surface, color, rect, border_radius=8)
+            color = LEVEL_NODE_LOCKED_COLOR
 
-        label_surface = button_font.render(str(index + 1), True, BUTTON_TEXT_COLOR)
-        surface.blit(label_surface, label_surface.get_rect(center=rect.center))
+        pygame.draw.circle(surface, color, (x, y), LEVEL_NODE_RADIUS)
+        pygame.draw.circle(surface, (255, 255, 255), (x, y), LEVEL_NODE_RADIUS, 2)
 
-        if index <= unlocked_level:
-            level_rects[index] = rect
+        label_surface = button_font.render(str(level_index + 1), True, BUTTON_TEXT_COLOR)
+        surface.blit(label_surface, label_surface.get_rect(center=(x, y)))
+
+        if level_index <= unlocked_level:
+            rect = pygame.Rect(0, 0, LEVEL_NODE_RADIUS * 2, LEVEL_NODE_RADIUS * 2)
+            rect.center = (x, y)
+            level_rects[level_index] = rect
 
     back_rect = draw_back_button(surface, button_font, "Menu")
 
     return level_rects, back_rect
 
 
-def draw_level_complete(surface, title_font, button_font, score, is_last_level):
+def draw_level_complete(surface, title_font, button_font, score):
     title_surface = title_font.render("Level Complete!", True, TITLE_COLOR)
     surface.blit(title_surface, title_surface.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 90)))
 
@@ -88,7 +103,7 @@ def draw_level_complete(surface, title_font, button_font, score, is_last_level):
 
     next_rect = pygame.Rect(0, 0, BUTTON_WIDTH, BUTTON_HEIGHT)
     next_rect.center = (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 40)
-    draw_button(surface, next_rect, "Menu" if is_last_level else "Next Level", button_font)
+    draw_button(surface, next_rect, "Next Level", button_font)
 
     return {"next": next_rect}
 
@@ -119,3 +134,32 @@ def draw_no_moves(surface, title_font, button_font, score):
     draw_button(surface, reshuffle_rect, "Reshuffle", button_font)
 
     return {"reshuffle": reshuffle_rect}
+
+
+def draw_tutorial(surface, title_font, button_font, board, swap_pair, step_text, is_last_step, now):
+    draw_grid(surface, board, now)
+
+    if swap_pair is not None:
+        tile_size = get_tile_size()
+        for cell in swap_pair:
+            x, y = cell_to_pixel(cell)
+            rect = pygame.Rect(x, y, tile_size, tile_size)
+            pygame.draw.rect(surface, (255, 255, 255), rect, 4, border_radius=8)
+
+    panel_rect = pygame.Rect(20, WINDOW_HEIGHT - 170, WINDOW_WIDTH - 40, 150)
+    panel_surface = pygame.Surface(panel_rect.size, pygame.SRCALPHA)
+    panel_surface.fill((10, 8, 20, 220))
+    surface.blit(panel_surface, panel_rect.topleft)
+
+    lines = step_text.split("\n")
+    for i, line in enumerate(lines):
+        line_surface = button_font.render(line, True, BUTTON_TEXT_COLOR)
+        surface.blit(line_surface, line_surface.get_rect(center=(WINDOW_WIDTH // 2, panel_rect.top + 30 + i * 32)))
+
+    next_rect = pygame.Rect(0, 0, BUTTON_WIDTH, BUTTON_HEIGHT)
+    next_rect.center = (WINDOW_WIDTH // 2, panel_rect.bottom - 35)
+    draw_button(surface, next_rect, "Got it!" if is_last_step else "Next", button_font)
+
+    skip_rect = draw_back_button(surface, button_font, "Skip")
+
+    return {"next": next_rect, "skip": skip_rect}
