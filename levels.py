@@ -4,16 +4,16 @@ import os
 from constants import SAVE_PATH
 
 LEVELS = [
-    {"target_score": 500, "move_limit": 15},
-    {"target_score": 800, "move_limit": 15},
-    {"target_score": 1200, "move_limit": 18},
-    {"target_score": 1600, "move_limit": 18},
-    {"target_score": 2200, "move_limit": 20},
-    {"target_score": 2800, "move_limit": 20},
-    {"target_score": 3500, "move_limit": 22},
-    {"target_score": 4200, "move_limit": 22},
-    {"target_score": 5000, "move_limit": 25},
-    {"target_score": 6000, "move_limit": 25},
+    {"rows": 6, "cols": 6, "colors": 4, "target_score": 400, "move_limit": 14},
+    {"rows": 6, "cols": 6, "colors": 4, "target_score": 600, "move_limit": 14},
+    {"rows": 7, "cols": 7, "colors": 5, "target_score": 900, "move_limit": 16},
+    {"rows": 7, "cols": 7, "colors": 5, "target_score": 1300, "move_limit": 16},
+    {"rows": 8, "cols": 8, "colors": 5, "target_score": 1800, "move_limit": 18},
+    {"rows": 8, "cols": 8, "colors": 6, "target_score": 2400, "move_limit": 18},
+    {"rows": 8, "cols": 8, "colors": 6, "target_score": 3000, "move_limit": 20},
+    {"rows": 9, "cols": 9, "colors": 6, "target_score": 3800, "move_limit": 22},
+    {"rows": 9, "cols": 9, "colors": 6, "target_score": 4600, "move_limit": 22},
+    {"rows": 10, "cols": 10, "colors": 6, "target_score": 6000, "move_limit": 26},
 ]
 
 
