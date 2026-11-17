@@ -149,6 +149,22 @@ def swap_cells(grid, cell_a, cell_b):
     grid[row_a][col_a], grid[row_b][col_b] = grid[row_b][col_b], grid[row_a][col_a]
 
 
+def has_possible_moves(grid):
+    rows, cols = BOARD["rows"], BOARD["cols"]
+    for row in range(rows):
+        for col in range(cols):
+            for dr, dc in ((0, 1), (1, 0)):
+                row2, col2 = row + dr, col + dc
+                if row2 >= rows or col2 >= cols:
+                    continue
+                swap_cells(grid, (row, col), (row2, col2))
+                matched = find_matches(grid)
+                swap_cells(grid, (row, col), (row2, col2))
+                if matched:
+                    return True
+    return False
+
+
 def find_match_runs(grid):
     rows, cols = BOARD["rows"], BOARD["cols"]
     runs = []
