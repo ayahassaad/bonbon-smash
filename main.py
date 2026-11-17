@@ -26,6 +26,7 @@ from constants import (
     STATE_PLAYING,
     STATE_LEVEL_COMPLETE,
     STATE_GAME_OVER,
+    STATE_NO_MOVES,
     FADE_DURATION_MS,
     FADE_COLOR,
 )
@@ -39,10 +40,18 @@ from grid import (
     swap_cells,
     analyze_matches,
     start_fall,
+    has_possible_moves,
 )
 from particles import spawn_particles_for_matches, update_and_draw_particles
 from levels import LEVELS, load_unlocked_level, save_unlocked_level
-from screens import draw_menu, draw_level_select, draw_level_complete, draw_game_over, draw_back_button
+from screens import (
+    draw_menu,
+    draw_level_select,
+    draw_level_complete,
+    draw_game_over,
+    draw_no_moves,
+    draw_back_button,
+)
 from starfield import create_stars, draw_stars
 
 
@@ -158,6 +167,11 @@ async def main():
                     if buttons.get("retry") and buttons["retry"].collidepoint(event.pos):
                         start_level(current_level)
                         state = STATE_PLAYING
+                elif state == STATE_NO_MOVES:
+                    if buttons.get("reshuffle") and buttons["reshuffle"].collidepoint(event.pos):
+                        grid = create_grid()
+                        selected_cell = None
+                        state = STATE_PLAYING
 
         if state == STATE_PLAYING and swap_animation is not None:
             elapsed = pygame.time.get_ticks() - swap_animation["start_time"]
@@ -197,6 +211,8 @@ async def main():
             elif moves_remaining <= 0:
                 lose_sound.play()
                 state = STATE_GAME_OVER
+            elif not has_possible_moves(grid):
+                state = STATE_NO_MOVES
 
         if state != previous_state:
             fade_start_time = pygame.time.get_ticks()
@@ -227,6 +243,8 @@ async def main():
             buttons = draw_game_over(
                 screen, title_font, button_font, score, LEVELS[current_level]["target_score"]
             )
+        elif state == STATE_NO_MOVES:
+            buttons = draw_no_moves(screen, title_font, button_font, score)
 
         fade_elapsed = pygame.time.get_ticks() - fade_start_time
         if fade_elapsed < FADE_DURATION_MS:
