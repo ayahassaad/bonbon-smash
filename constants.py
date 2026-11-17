@@ -18,12 +18,12 @@ SCORE_COLOR = (255, 255, 255)
 SCORE_POSITION = (120, 12)
 
 CANDY_COLORS = [
-    (220, 60, 60),    # red
-    (240, 170, 50),   # orange
-    (230, 220, 60),   # yellow
-    (70, 180, 90),    # green
-    (60, 120, 220),   # blue
-    (170, 80, 200),   # purple
+    (255, 45, 150),    # neon pink
+    (170, 40, 255),    # electric purple
+    (80, 100, 255),    # neon blue
+    (0, 220, 255),     # cyan
+    (210, 60, 255),    # violet
+    (255, 0, 200),     # magenta
 ]
 
 SELECTION_COLOR = (255, 255, 255)
