@@ -2,7 +2,9 @@ import math
 
 import pygame
 
-SHAPES = ["circle", "diamond", "star", "square", "triangle", "hexagon"]
+from constants import BACKGROUND_COLOR
+
+SHAPES = ["circle", "diamond", "star", "ring", "moon", "hexagon"]
 
 
 def darken(color, amount=0.3):
@@ -74,8 +76,6 @@ def draw_glow(surface, center, color, radius):
 def get_shape_points(shape, center, radius):
     if shape == "diamond":
         return regular_polygon_points(center, radius, 4, rotation=-math.pi / 4)
-    if shape == "triangle":
-        return regular_polygon_points(center, radius, 3, rotation=-math.pi / 2)
     if shape == "hexagon":
         return regular_polygon_points(center, radius, 6)
     if shape == "star":
@@ -94,13 +94,18 @@ def draw_candy(surface, rect, color_index, color, special=None):
     if shape == "circle":
         pygame.draw.circle(surface, color, center, radius)
         pygame.draw.circle(surface, outline_color, center, radius, 2)
-    elif shape == "square":
-        side = radius * 1.6
-        square_rect = pygame.Rect(0, 0, side, side)
-        square_rect.center = center
-        border_radius = int(side * 0.2)
-        pygame.draw.rect(surface, color, square_rect, border_radius=border_radius)
-        pygame.draw.rect(surface, outline_color, square_rect, width=2, border_radius=border_radius)
+    elif shape == "ring":
+        body_radius = radius * 0.65
+        pygame.draw.circle(surface, color, center, body_radius)
+        pygame.draw.circle(surface, outline_color, center, body_radius, 2)
+        ring_rect = pygame.Rect(0, 0, radius * 2.1, radius * 0.75)
+        ring_rect.center = center
+        pygame.draw.ellipse(surface, lighten(color, 0.3), ring_rect, 3)
+    elif shape == "moon":
+        pygame.draw.circle(surface, color, center, radius)
+        pygame.draw.circle(surface, outline_color, center, radius, 2)
+        cutout_center = (center[0] + radius * 0.5, center[1] - radius * 0.15)
+        pygame.draw.circle(surface, BACKGROUND_COLOR, cutout_center, radius * 0.85)
     else:
         points = get_shape_points(shape, center, radius)
         pygame.draw.polygon(surface, color, points)
