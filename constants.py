@@ -53,6 +53,7 @@ STATE_LEVEL_SELECT = "level_select"
 STATE_PLAYING = "playing"
 STATE_LEVEL_COMPLETE = "level_complete"
 STATE_GAME_OVER = "game_over"
+STATE_NO_MOVES = "no_moves"
 
 SAVE_PATH = "save_data.json"
 
